@@ -106,42 +106,10 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">NEWS FEED</div>
-          <div class="card-action">REFRESH</div>
+          <div class="card-action" onclick="loadNews()">REFRESH</div>
         </div>
-        <div class="news-item">
-          <span class="news-tag tag-tz">TZ</span>
-          <div>
-            <div class="news-headline">TRA announces updated EFD compliance requirements for Q3 2026</div>
-            <div class="news-meta">The Citizen &nbsp;·&nbsp; 42 min ago</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <span class="news-tag tag-biz">BIZ</span>
-          <div>
-            <div class="news-headline">Tanzania shilling stabilises at 2,640 against USD after brief volatility</div>
-            <div class="news-meta">Bloomberg Africa &nbsp;·&nbsp; 1 hr ago</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <span class="news-tag tag-tech">TECH</span>
-          <div>
-            <div class="news-headline">Anthropic releases Claude 4.6 with expanded agentic capabilities</div>
-            <div class="news-meta">TechCrunch &nbsp;·&nbsp; 2 hr ago</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <span class="news-tag tag-tz">TZ</span>
-          <div>
-            <div class="news-headline">Dar es Salaam port throughput hits record high in April 2026</div>
-            <div class="news-meta">Daily News &nbsp;·&nbsp; 3 hr ago</div>
-          </div>
-        </div>
-        <div class="news-item">
-          <span class="news-tag tag-biz">BIZ</span>
-          <div>
-            <div class="news-headline">East Africa manufacturing sector reports 8.2% growth in Q1 2026</div>
-            <div class="news-meta">Reuters Africa &nbsp;·&nbsp; 4 hr ago</div>
-          </div>
+        <div id="news-feed">
+          <div class="loading">FETCHING FEED...</div>
         </div>
       </div>
 
@@ -151,7 +119,7 @@
 
       <div class="panel-section">
         <div class="panel-header">WEATHER // DAR ES SALAAM</div>
-        <div class="weather-block">
+        <div class="weather-block" id="weather-block">
           <div class="weather-icon">⛅</div>
           <div>
             <div class="weather-temp">29°C</div>
@@ -230,19 +198,6 @@
   </div>
 </div>
 
-<script>
-  function tick() {
-    const now = new Date();
-    document.getElementById('live-time').textContent = now.toTimeString().split(' ')[0];
-  }
-  tick(); setInterval(tick, 1000);
-
-  function toggleDone(el) {
-    const isDone = el.classList.toggle('reminder-done');
-    const check = el.querySelector('.reminder-check');
-    check.textContent = isDone ? '✓' : '';
-  }
-</script>
 <script src="app.js"></script>
 
 </body>
