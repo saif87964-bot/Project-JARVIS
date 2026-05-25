@@ -119,9 +119,9 @@ body::after {
 .status-ok   { background: rgba(57,255,20,0.1);  border: 1px solid rgba(57,255,20,0.3);  color: var(--accent3); }
 .status-warn { background: rgba(255,107,43,0.1); border: 1px solid rgba(255,107,43,0.3); color: var(--accent2); }
 
-/* Hide centre label on narrow screens */
+/* Hide centre label on narrower desktop */
 @media (max-width: 1100px) { .topbar-center { display: none; } }
-@media (max-width: 900px)  { .status-pill:not(:first-child) { display: none; } }
+@media (max-width: 900px)  { .topbar-right .status-pill:nth-child(n+2) { display: none; } }
 
 /* ── Main 3-column ───────────────────────────────────────────── */
 .main {
@@ -292,3 +292,68 @@ body::after {
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Single scrollable column — no more 3-column grid */
+  .main {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+  }
+
+  /* Sidebar hidden — toggled via JS later */
+  .sidebar { display: none; }
+
+  /* Center: don't create its own scroll context, let .main scroll */
+  .center {
+    overflow-y: visible;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  /* Right panel: full width, natural height, no independent scroll */
+  .right-panel {
+    overflow-y: visible;
+    border-left: none;
+    border-top: 1px solid var(--dim);
+    /* Hide the spacer div so command bar doesn't float */
+  }
+  .right-panel > div[style*="flex:1"] { display: none; }
+
+  /* Command bar sticks to bottom of the page on mobile */
+  .command-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+  }
+
+  /* Topbar: logo + one status pill only */
+  .topbar { padding: 0 12px; gap: 8px; }
+  .topbar-center { display: none; }
+  .status-pill { display: none; }
+  .status-pill:first-child { display: inline-block; }
+
+  /* Greeting card: tighter on small screen */
+  .greeting-card { padding: 14px; }
+  .greeting-card::before { font-size: 50px; }
+  .greeting-main { font-size: 21px; }
+  .greeting-sub { font-size: 11px; }
+  .greeting-stats { gap: 14px; }
+  .gstat-num { font-size: 20px; }
+  .gstat-label { font-size: 9px; }
+
+  /* Weather: smaller */
+  .weather-icon { font-size: 28px; }
+  .weather-temp { font-size: 24px; }
+
+  /* Stat grid: 2 cols already fine, just shrink text */
+  .stat-val { font-size: 15px; }
+  .stat-label { font-size: 9px; }
+
+  /* News + reminders: full width, no truncation issues */
+  .news-headline { font-size: 13px; }
+  .email-subject { font-size: 11px; }
+}
