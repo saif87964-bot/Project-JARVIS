@@ -73,6 +73,7 @@ function navigate(viewId) {
   // View-specific on-enter actions
   if (viewId === 'reminders') renderTasks();
   if (viewId === 'news')      loadFullNews();
+  if (viewId === 'calendar')  initCalendar();
 
   // Update hash (minus # for dashboard)
   history.replaceState(null, '', viewId === 'dashboard' ? ' ' : '#' + viewId);
@@ -256,6 +257,244 @@ function updateBadges() {
 
 
 // ══════════════════════════════════════════════════════════════
+//  CALENDAR MODULE
+// ══════════════════════════════════════════════════════════════
+
+const EVENTS_KEY = 'jv_events';
+let calYear      = new Date().getFullYear();
+let calMonth     = new Date().getMonth(); // 0-indexed
+let selectedDate = null;
+let calFormOpen  = false;
+
+// ── Storage ────────────────────────────────────────────────────
+function getEvents() {
+  try { return JSON.parse(localStorage.getItem(EVENTS_KEY)) || []; }
+  catch { return []; }
+}
+function saveEvents(ev) { localStorage.setItem(EVENTS_KEY, JSON.stringify(ev)); }
+function getEventsForDate(dateStr) { return getEvents().filter(e => e.date === dateStr); }
+
+// ── Seed defaults (first run) ──────────────────────────────────
+function seedDefaultEvents() {
+  if (getEvents().length > 0) return;
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const today    = new Date();
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const nextWeek = new Date(today.getTime() + 7 * 86400000);
+  saveEvents([
+    { id: 'ev1', title: 'TRA compliance review',       date: fmt(today),    time: '10:00', createdAt: Date.now()-3 },
+    { id: 'ev2', title: 'Twigaz factory inspection',   date: fmt(tomorrow), time: '09:30', createdAt: Date.now()-2 },
+    { id: 'ev3', title: 'EASWIL board meeting',         date: fmt(nextWeek), time: '14:00', createdAt: Date.now()-1 },
+  ]);
+}
+
+// ── CRUD ───────────────────────────────────────────────────────
+function addEvent(title, time = '') {
+  if (!selectedDate || !title.trim()) return;
+  const evs = getEvents();
+  evs.push({ id: 'ev' + Date.now(), title: title.trim(), date: selectedDate, time: time.trim(), createdAt: Date.now() });
+  saveEvents(evs);
+  afterEventChange();
+}
+
+function deleteEvent(id) {
+  saveEvents(getEvents().filter(e => e.id !== id));
+  afterEventChange();
+}
+
+function afterEventChange() {
+  buildCalendar();
+  renderDayEvents();
+  renderUpcoming();
+  updateMeetingsStat();
+}
+
+// ── Build month grid ───────────────────────────────────────────
+function buildCalendar() {
+  const label = document.getElementById('cal-month-label');
+  if (label) label.textContent = `${MONTHS[calMonth]} ${calYear}`;
+
+  const grid = document.getElementById('cal-days');
+  if (!grid) return;
+
+  const firstDow  = new Date(calYear, calMonth, 1).getDay();       // 0=Sun
+  const offset    = (firstDow + 6) % 7;                            // shift to Mon-start
+  const daysTotal = new Date(calYear, calMonth + 1, 0).getDate();
+  const today     = new Date();
+  const isCurMon  = today.getFullYear() === calYear && today.getMonth() === calMonth;
+
+  let html = '';
+
+  // Empty leading cells
+  for (let i = 0; i < offset; i++) html += `<div class="cal-day cal-empty"></div>`;
+
+  // Day cells
+  for (let d = 1; d <= daysTotal; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evCount = getEventsForDate(dateStr).length;
+    const isToday    = isCurMon && d === today.getDate();
+    const isSelected = dateStr === selectedDate;
+    const cls = ['cal-day', isToday ? 'cal-today' : '', isSelected ? 'cal-selected' : ''].filter(Boolean).join(' ');
+    const dots = evCount > 0
+      ? `<div class="cal-dots">${'<div class="cal-dot"></div>'.repeat(Math.min(evCount, 3))}</div>`
+      : '';
+    html += `<div class="${cls}" data-date="${dateStr}"><span class="cal-day-num">${d}</span>${dots}</div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Bind day clicks
+  grid.querySelectorAll('.cal-day:not(.cal-empty)').forEach(cell => {
+    cell.addEventListener('click', () => selectDay(cell.dataset.date));
+  });
+}
+
+// ── Select a day ───────────────────────────────────────────────
+function selectDay(dateStr) {
+  selectedDate = dateStr;
+
+  // Update selected highlight without full rebuild
+  document.querySelectorAll('.cal-day').forEach(c => c.classList.toggle('cal-selected', c.dataset.date === dateStr));
+
+  // Update day title
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today.getTime() + 86400000);
+  const label = d.getTime() === today.getTime()    ? 'TODAY' :
+                d.getTime() === tomorrow.getTime() ? 'TOMORROW' :
+                `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  const titleEl = document.getElementById('cal-day-title');
+  if (titleEl) titleEl.textContent = label;
+
+  // Close add form on day switch
+  closeEventForm();
+  renderDayEvents();
+}
+
+// ── Render: events for selected day ───────────────────────────
+function renderDayEvents() {
+  const container = document.getElementById('cal-day-events');
+  if (!container) return;
+  if (!selectedDate) { container.innerHTML = '<div class="loading">SELECT A DAY TO VIEW EVENTS</div>'; return; }
+
+  const evs = getEventsForDate(selectedDate).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  if (evs.length === 0) {
+    container.innerHTML = '<div class="loading">NO EVENTS — CLICK + EVENT TO ADD</div>';
+    return;
+  }
+  container.innerHTML = evs.map(e => `
+    <div class="cal-event-item">
+      ${e.time ? `<div class="cal-event-time-badge">${esc(e.time)}</div>` : ''}
+      <div class="cal-event-body">
+        <div class="cal-event-title">${esc(e.title)}</div>
+      </div>
+      <div class="cal-event-del" onclick="deleteEvent('${e.id}')">×</div>
+    </div>`).join('');
+}
+
+// ── Render: upcoming 7 days ────────────────────────────────────
+function renderUpcoming() {
+  const container = document.getElementById('cal-upcoming');
+  if (!container) return;
+
+  const now = new Date(); now.setHours(0,0,0,0);
+  const weekOut = new Date(now.getTime() + 7 * 86400000);
+
+  const evs = getEvents()
+    .filter(e => { const d = new Date(e.date + 'T00:00:00'); return d >= now && d <= weekOut; })
+    .sort((a,b) => a.date.localeCompare(b.date) || (a.time||'').localeCompare(b.time||''));
+
+  if (evs.length === 0) {
+    container.innerHTML = '<div class="loading">NO UPCOMING EVENTS THIS WEEK</div>';
+    return;
+  }
+
+  container.innerHTML = evs.map(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const tomorrow = new Date(now.getTime() + 86400000);
+    const badge = d.getTime() === now.getTime()      ? 'TODAY' :
+                  d.getTime() === tomorrow.getTime() ? 'TOMORROW' :
+                  `${DAYS[d.getDay()]} ${d.getDate()}`;
+    return `
+      <div class="cal-event-item">
+        <div class="cal-event-date-badge">${badge}</div>
+        ${e.time ? `<div class="cal-event-time-badge">${esc(e.time)}</div>` : ''}
+        <div class="cal-event-body">
+          <div class="cal-event-title">${esc(e.title)}</div>
+        </div>
+        <div class="cal-event-del" onclick="deleteEvent('${e.id}')">×</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Event form ─────────────────────────────────────────────────
+function openEventForm() {
+  calFormOpen = true;
+  document.getElementById('cal-event-form')?.classList.add('open');
+  document.getElementById('cal-event-title')?.focus();
+}
+function closeEventForm() {
+  calFormOpen = false;
+  const form = document.getElementById('cal-event-form');
+  if (form) { form.classList.remove('open'); }
+  const inp = document.getElementById('cal-event-title');
+  const t   = document.getElementById('cal-event-time');
+  if (inp) inp.value = '';
+  if (t)   t.value   = '';
+}
+function submitEvent() {
+  const title = document.getElementById('cal-event-title')?.value.trim();
+  const time  = document.getElementById('cal-event-time')?.value.trim();
+  if (!title) { document.getElementById('cal-event-title')?.focus(); return; }
+  addEvent(title, time);
+  closeEventForm();
+}
+
+document.getElementById('cal-add-btn')?.addEventListener('click', () => {
+  if (!selectedDate) return;
+  calFormOpen ? closeEventForm() : openEventForm();
+});
+document.getElementById('cal-event-submit')?.addEventListener('click', submitEvent);
+document.getElementById('cal-event-title')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter')  submitEvent();
+  if (e.key === 'Escape') closeEventForm();
+});
+
+// ── Month navigation ───────────────────────────────────────────
+document.getElementById('cal-prev')?.addEventListener('click', () => {
+  calMonth--; if (calMonth < 0)  { calMonth = 11; calYear--; }
+  buildCalendar();
+});
+document.getElementById('cal-next')?.addEventListener('click', () => {
+  calMonth++; if (calMonth > 11) { calMonth = 0;  calYear++; }
+  buildCalendar();
+});
+
+// ── Greeting stat — meetings today ────────────────────────────
+function updateMeetingsStat() {
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  const count = getEventsForDate(dateStr).length;
+  const el = document.getElementById('gs-meetings');
+  if (el) el.textContent = count;
+}
+
+// ── Init calendar view ────────────────────────────────────────
+function initCalendar() {
+  calYear  = new Date().getFullYear();
+  calMonth = new Date().getMonth();
+
+  buildCalendar();
+  renderUpcoming();
+
+  // Auto-select today
+  const t = new Date();
+  const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+  selectDay(todayStr);
+}
+
+
+// ══════════════════════════════════════════════════════════════
 //  WEATHER  (wttr.in — no API key)
 // ══════════════════════════════════════════════════════════════
 
@@ -411,7 +650,9 @@ document.getElementById('news-refresh-btn')?.addEventListener('click', () => {
 //  INIT
 // ══════════════════════════════════════════════════════════════
 seedDefaultTasks();
+seedDefaultEvents();
 updateDashboardTasks();
 updateBadges();
+updateMeetingsStat();
 loadWeather();
 loadNews();

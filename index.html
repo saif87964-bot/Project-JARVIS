@@ -77,7 +77,7 @@
           <div class="greeting-stats">
             <div class="gstat"><div class="gstat-num" id="gs-tasks">—</div><div class="gstat-label">TASKS LEFT</div></div>
             <div class="gstat"><div class="gstat-num">7</div><div class="gstat-label">UNREAD EMAILS</div></div>
-            <div class="gstat"><div class="gstat-num">2</div><div class="gstat-label">MEETINGS</div></div>
+            <div class="gstat"><div class="gstat-num" id="gs-meetings">—</div><div class="gstat-label">MEETINGS</div></div>
             <div class="gstat"><div class="gstat-num" id="gs-news">—</div><div class="gstat-label">NEWS ITEMS</div></div>
           </div>
         </div>
@@ -159,17 +159,54 @@
         </div>
       </div>
 
-      <!-- ▸ CALENDAR (stub) ──────────────────────────────────── -->
+      <!-- ▸ CALENDAR ────────────────────────────────────────── -->
       <div id="view-calendar" class="view">
+
+        <!-- Month grid -->
         <div class="card">
-          <div class="card-header"><div class="card-title">CALENDAR</div></div>
-          <div class="module-stub">
-            <div class="module-stub-icon">◷</div>
-            <div class="module-stub-title">CALENDAR</div>
-            <div class="module-stub-sub">COMING SOON — GOOGLE CALENDAR API</div>
+          <div class="card-header">
+            <div class="card-title">CALENDAR</div>
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+              <span class="cal-month-label" id="cal-month-label">— —</span>
+              <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+            </div>
           </div>
+          <div class="cal-dow-row">
+            <div class="cal-dow">M</div>
+            <div class="cal-dow">T</div>
+            <div class="cal-dow">W</div>
+            <div class="cal-dow">T</div>
+            <div class="cal-dow">F</div>
+            <div class="cal-dow">S</div>
+            <div class="cal-dow">S</div>
+          </div>
+          <div class="cal-grid" id="cal-days"></div>
         </div>
-      </div>
+
+        <!-- Selected day panel -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="cal-day-title">SELECT A DAY</div>
+            <div class="card-action" id="cal-add-btn">+ EVENT</div>
+          </div>
+          <div class="cal-event-form" id="cal-event-form">
+            <input id="cal-event-title" class="task-input" placeholder="Event title..." maxlength="80" autocomplete="off" />
+            <input id="cal-event-time" class="task-time-input" placeholder="09:00" maxlength="8" type="text" />
+            <button class="task-add-btn" id="cal-event-submit">ADD</button>
+          </div>
+          <div id="cal-day-events"><div class="loading">SELECT A DAY TO VIEW EVENTS</div></div>
+        </div>
+
+        <!-- Upcoming 7 days -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">UPCOMING — NEXT 7 DAYS</div>
+          </div>
+          <div id="cal-upcoming"><div class="loading">LOADING...</div></div>
+        </div>
+
+      </div><!-- /view-calendar -->
 
       <!-- ▸ SETTINGS (stub) ──────────────────────────────────── -->
       <div id="view-settings" class="view">

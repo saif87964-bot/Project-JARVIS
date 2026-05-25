@@ -420,6 +420,107 @@ body::after {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+/* ── Calendar ────────────────────────────────────────────────── */
+.cal-nav { display: flex; align-items: center; gap: 6px; }
+.cal-nav-btn {
+  font-family: 'Share Tech Mono', monospace; font-size: 18px;
+  color: var(--muted); background: none; border: none;
+  cursor: pointer; padding: 0 6px; line-height: 1;
+  transition: color 0.15s;
+}
+.cal-nav-btn:hover { color: var(--accent); }
+.cal-month-label {
+  font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  color: var(--accent); letter-spacing: 2px;
+  min-width: 108px; text-align: center;
+}
+
+/* Day-of-week header row */
+.cal-dow-row {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--dim);
+}
+.cal-dow {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px;
+  color: var(--muted); letter-spacing: 1px;
+  text-align: center; padding: 7px 0;
+}
+
+/* Day grid */
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 1px; background: var(--dim);
+}
+.cal-day {
+  background: var(--card); min-height: 46px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 6px 4px; gap: 3px;
+  cursor: pointer; transition: background 0.15s;
+}
+.cal-day:hover { background: rgba(0,212,255,0.06); }
+.cal-empty { background: rgba(0,0,0,0.25); cursor: default; pointer-events: none; }
+.cal-day-num {
+  font-family: 'Share Tech Mono', monospace; font-size: 11px;
+  color: var(--text); line-height: 1;
+}
+.cal-today { background: rgba(0,212,255,0.05); }
+.cal-today .cal-day-num {
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(0,212,255,0.6);
+}
+.cal-selected {
+  background: rgba(0,212,255,0.12) !important;
+  outline: 1px solid rgba(0,212,255,0.35);
+  outline-offset: -1px;
+}
+.cal-selected .cal-day-num { color: var(--accent); }
+.cal-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 1px; }
+.cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
+
+/* Event add form */
+.cal-event-form {
+  display: none; align-items: center; gap: 8px;
+  padding: 10px 14px; border-bottom: 1px solid var(--dim);
+  background: rgba(0,0,0,0.15);
+}
+.cal-event-form.open { display: flex; }
+
+/* Event list items */
+.cal-event-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid var(--dim);
+  transition: background 0.15s;
+}
+.cal-event-item:last-child { border-bottom: none; }
+.cal-event-item:hover { background: rgba(0,212,255,0.03); }
+.cal-event-time-badge {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  color: var(--accent); background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.2); border-radius: 2px;
+  padding: 2px 7px; white-space: nowrap; flex-shrink: 0;
+  min-width: 44px; text-align: center;
+}
+.cal-event-date-badge {
+  font-family: 'Share Tech Mono', monospace; font-size: 9px;
+  color: var(--muted); background: var(--dim);
+  border-radius: 2px; padding: 2px 6px;
+  white-space: nowrap; flex-shrink: 0; letter-spacing: 1px;
+}
+.cal-event-body { flex: 1; min-width: 0; }
+.cal-event-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  user-select: text;
+}
+.cal-event-sub { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 1px; }
+.cal-event-del {
+  font-size: 18px; line-height: 1; color: var(--dim);
+  cursor: pointer; flex-shrink: 0; padding: 0 3px;
+  transition: color 0.15s;
+}
+.cal-event-del:hover { color: var(--accent2); }
+
 /* ── Mobile (≤ 768px) ────────────────────────────────────────── */
 @media (max-width: 768px) {
 
