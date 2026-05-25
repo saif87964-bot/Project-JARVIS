@@ -15,6 +15,7 @@
 <body>
 <div class="app">
 
+  <!-- ── Topbar ─────────────────────────────────────────────── -->
   <div class="topbar">
     <div class="logo">
       <div class="logo-dot"></div>
@@ -32,14 +33,15 @@
 
   <div class="main">
 
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
     <div class="sidebar">
       <div class="nav-section-label">MODULES</div>
-      <div class="nav-item active"><span class="nav-icon">⬡</span> Dashboard</div>
-      <div class="nav-item"><span class="nav-icon">✉</span> Inbox <span class="nav-badge">7</span></div>
-      <div class="nav-item"><span class="nav-icon">◎</span> Reminders <span class="nav-badge">3</span></div>
-      <div class="nav-item"><span class="nav-icon">▦</span> News Feed</div>
-      <div class="nav-item"><span class="nav-icon">◷</span> Calendar</div>
-      <div class="nav-item"><span class="nav-icon">◈</span> Tasks</div>
+      <div class="nav-item active" data-view="dashboard"><span class="nav-icon">⬡</span> Dashboard</div>
+      <div class="nav-item" data-view="inbox"><span class="nav-icon">✉</span> Inbox <span class="nav-badge" id="badge-inbox">7</span></div>
+      <div class="nav-item" data-view="reminders"><span class="nav-icon">◎</span> Reminders <span class="nav-badge" id="badge-reminders"></span></div>
+      <div class="nav-item" data-view="news"><span class="nav-icon">▦</span> News Feed</div>
+      <div class="nav-item" data-view="calendar"><span class="nav-icon">◷</span> Calendar</div>
+      <div class="nav-item" data-view="reminders"><span class="nav-icon">◈</span> Tasks</div>
 
       <div class="nav-section-label" style="margin-top:8px">BUSINESSES</div>
       <div class="nav-item"><span class="nav-icon">◆</span> Ali Distributors</div>
@@ -49,7 +51,7 @@
       <div class="nav-item"><span class="nav-icon">◆</span> IMH Associates</div>
 
       <div class="nav-section-label" style="margin-top:8px">SETTINGS</div>
-      <div class="nav-item"><span class="nav-icon">⚙</span> Integrations</div>
+      <div class="nav-item" data-view="settings"><span class="nav-icon">⚙</span> Integrations</div>
       <div class="nav-item"><span class="nav-icon">◑</span> Preferences</div>
 
       <div class="sidebar-footer">
@@ -63,58 +65,127 @@
       </div>
     </div>
 
+    <!-- ── Center (views swap here) ─────────────────────────── -->
     <div class="center">
 
-      <div class="greeting-card">
-        <div class="greeting-main">Good morning, <span>Saif.</span></div>
-        <div class="greeting-sub" id="greeting-sub">// MON 25 MAY 2026 &nbsp;·&nbsp; 5 ITEMS NEED ATTENTION</div>
-        <div class="greeting-stats">
-          <div class="gstat"><div class="gstat-num">7</div><div class="gstat-label">UNREAD EMAILS</div></div>
-          <div class="gstat"><div class="gstat-num">3</div><div class="gstat-label">DUE TODAY</div></div>
-          <div class="gstat"><div class="gstat-num">2</div><div class="gstat-label">MEETINGS</div></div>
-          <div class="gstat"><div class="gstat-num">12</div><div class="gstat-label">NEWS ITEMS</div></div>
+      <!-- ▸ DASHBOARD ───────────────────────────────────────── -->
+      <div id="view-dashboard" class="view active">
+
+        <div class="greeting-card">
+          <div class="greeting-main" id="greeting-main">Good morning, <span>Saif.</span></div>
+          <div class="greeting-sub" id="greeting-sub">// LOADING...</div>
+          <div class="greeting-stats">
+            <div class="gstat"><div class="gstat-num" id="gs-tasks">—</div><div class="gstat-label">TASKS LEFT</div></div>
+            <div class="gstat"><div class="gstat-num">7</div><div class="gstat-label">UNREAD EMAILS</div></div>
+            <div class="gstat"><div class="gstat-num">2</div><div class="gstat-label">MEETINGS</div></div>
+            <div class="gstat"><div class="gstat-num" id="gs-news">—</div><div class="gstat-label">NEWS ITEMS</div></div>
+          </div>
+        </div>
+
+        <!-- Tasks preview -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">REMINDERS &amp; TASKS</div>
+            <div class="card-action" data-view="reminders">VIEW ALL →</div>
+          </div>
+          <div id="dashboard-tasks"><div class="loading">LOADING...</div></div>
+        </div>
+
+        <!-- News preview -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">NEWS FEED</div>
+            <div class="card-action" onclick="loadNews()">REFRESH</div>
+          </div>
+          <div id="news-feed"><div class="loading">FETCHING FEED...</div></div>
+        </div>
+
+      </div><!-- /view-dashboard -->
+
+      <!-- ▸ REMINDERS & TASKS ───────────────────────────────── -->
+      <div id="view-reminders" class="view">
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">REMINDERS &amp; TASKS</div>
+            <span class="task-counter" id="task-counter">— REMAINING</span>
+          </div>
+
+          <div class="task-add-form">
+            <input id="task-input" class="task-input" placeholder="What needs to be done?" maxlength="140" autocomplete="off" />
+            <input id="task-time" class="task-time-input" type="text" placeholder="09:00" maxlength="8" />
+            <button class="task-add-btn" id="task-add-btn">+ ADD</button>
+          </div>
+
+          <div class="task-filters">
+            <button class="task-filter active" data-filter="all">ALL</button>
+            <button class="task-filter" data-filter="active">ACTIVE</button>
+            <button class="task-filter" data-filter="done">DONE</button>
+          </div>
+
+          <div id="task-list"></div>
+        </div>
+
+      </div><!-- /view-reminders -->
+
+      <!-- ▸ NEWS FEED ────────────────────────────────────────── -->
+      <div id="view-news" class="view">
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">NEWS FEED</div>
+            <div class="card-action" id="news-refresh-btn">REFRESH</div>
+          </div>
+          <div class="news-tabs">
+            <button class="news-tab active" data-feed="all">ALL</button>
+            <button class="news-tab" data-feed="tz">EAST AFRICA</button>
+            <button class="news-tab" data-feed="tech">TECH &amp; AI</button>
+            <button class="news-tab" data-feed="biz">BUSINESS</button>
+          </div>
+          <div id="news-full"><div class="loading">FETCHING FEED...</div></div>
+        </div>
+
+      </div><!-- /view-news -->
+
+      <!-- ▸ INBOX (stub) ─────────────────────────────────────── -->
+      <div id="view-inbox" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title">GMAIL INBOX</div></div>
+          <div class="module-stub">
+            <div class="module-stub-icon">✉</div>
+            <div class="module-stub-title">GMAIL INTEGRATION</div>
+            <div class="module-stub-sub">COMING NEXT — OAUTH + GMAIL API</div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">REMINDERS &amp; TASKS</div>
-          <div class="card-action">+ ADD</div>
-        </div>
-        <div class="reminder-item reminder-urgent" onclick="toggleDone(this)">
-          <div class="reminder-check"></div>
-          <div class="reminder-text">VAT reconciliation March 2025 — submit to TRA</div>
-          <div class="reminder-time">09:00 !</div>
-        </div>
-        <div class="reminder-item" onclick="toggleDone(this)">
-          <div class="reminder-check"></div>
-          <div class="reminder-text">Twigaz WIP drum recount — factory floor</div>
-          <div class="reminder-time">11:00</div>
-        </div>
-        <div class="reminder-item reminder-done" onclick="toggleDone(this)">
-          <div class="reminder-check">✓</div>
-          <div class="reminder-text">Review EASWIL cash flow projection</div>
-          <div class="reminder-time">Done</div>
-        </div>
-        <div class="reminder-item" onclick="toggleDone(this)">
-          <div class="reminder-check"></div>
-          <div class="reminder-text">Kariakoo business licence renewal</div>
-          <div class="reminder-time">EOD</div>
+      <!-- ▸ CALENDAR (stub) ──────────────────────────────────── -->
+      <div id="view-calendar" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title">CALENDAR</div></div>
+          <div class="module-stub">
+            <div class="module-stub-icon">◷</div>
+            <div class="module-stub-title">CALENDAR</div>
+            <div class="module-stub-sub">COMING SOON — GOOGLE CALENDAR API</div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">NEWS FEED</div>
-          <div class="card-action" onclick="loadNews()">REFRESH</div>
-        </div>
-        <div id="news-feed">
-          <div class="loading">FETCHING FEED...</div>
+      <!-- ▸ SETTINGS (stub) ──────────────────────────────────── -->
+      <div id="view-settings" class="view">
+        <div class="card">
+          <div class="card-header"><div class="card-title">INTEGRATIONS</div></div>
+          <div class="module-stub">
+            <div class="module-stub-icon">⚙</div>
+            <div class="module-stub-title">INTEGRATIONS</div>
+            <div class="module-stub-sub">CONFIGURE API KEYS &amp; CONNECTIONS</div>
+          </div>
         </div>
       </div>
 
-    </div>
+    </div><!-- /center -->
 
+    <!-- ── Right Panel ───────────────────────────────────────── -->
     <div class="right-panel">
 
       <div class="panel-section">
@@ -122,9 +193,9 @@
         <div class="weather-block" id="weather-block">
           <div class="weather-icon">⛅</div>
           <div>
-            <div class="weather-temp">29°C</div>
+            <div class="weather-temp">—°C</div>
             <div class="weather-city">DAR ES SALAAM, TZ</div>
-            <div class="weather-desc">Partly Cloudy · Humidity 78%</div>
+            <div class="weather-desc">Loading...</div>
           </div>
         </div>
       </div>
@@ -147,7 +218,7 @@
           <div class="email-sender">Ali Distributors <span class="email-time">Yesterday</span></div>
           <div class="email-subject">Vehicle insurance renewal — fleet update</div>
         </div>
-        <div style="padding:8px 14px; font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); cursor:pointer; text-align:center;">VIEW ALL →</div>
+        <div style="padding:8px 14px; font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); cursor:pointer; text-align:center;" data-view="inbox">VIEW ALL →</div>
       </div>
 
       <div class="panel-section">
@@ -193,12 +264,11 @@
         </div>
       </div>
 
-    </div>
+    </div><!-- /right-panel -->
 
-  </div>
-</div>
+  </div><!-- /main -->
+</div><!-- /app -->
 
 <script src="app.js"></script>
-
 </body>
 </html>
