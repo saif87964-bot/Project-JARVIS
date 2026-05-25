@@ -521,6 +521,9 @@ body::after {
 }
 .cal-event-del:hover { color: var(--accent2); }
 
+/* ── Bottom nav (desktop: hidden) ───────────────────────────── */
+.bottom-nav { display: none; }
+
 /* ── Mobile (≤ 768px) ────────────────────────────────────────── */
 @media (max-width: 768px) {
 
@@ -530,10 +533,14 @@ body::after {
     overflow-y: auto;
     overflow-x: hidden;
     height: 100%;
+    padding-bottom: 60px; /* clear the bottom nav */
   }
 
-  /* Sidebar hidden — toggled via JS later */
+  /* Sidebar hidden on mobile — use bottom nav instead */
   .sidebar { display: none; }
+
+  /* Command bar hidden on mobile — bottom nav handles navigation */
+  .command-bar { display: none; }
 
   /* Center: don't create its own scroll context, let .main scroll */
   .center {
@@ -557,6 +564,39 @@ body::after {
     bottom: 0;
     z-index: 50;
   }
+
+  /* Bottom nav */
+  .bottom-nav {
+    display: flex;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(6,10,15,0.97);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bnav-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; position: relative;
+    color: var(--muted); transition: color 0.15s;
+  }
+  .bnav-item:active { background: rgba(0,212,255,0.06); }
+  .bnav-item.active { color: var(--accent); }
+  .bnav-icon { font-size: 17px; line-height: 1; }
+  .bnav-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 7px; letter-spacing: 1px;
+  }
+  .bnav-badge {
+    position: absolute; top: 5px; right: calc(50% - 16px);
+    background: var(--accent2); color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8px; padding: 1px 4px; border-radius: 2px;
+    min-width: 14px; text-align: center; line-height: 1.4;
+  }
+  .bnav-badge:empty { display: none; }
 
   /* Topbar: logo + one status pill only */
   .topbar { padding: 0 12px; gap: 8px; }

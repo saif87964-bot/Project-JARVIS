@@ -62,8 +62,11 @@ function navigate(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + viewId).classList.add('active');
 
-  // Update nav active state
+  // Update sidebar + bottom nav active state
   document.querySelectorAll('.nav-item[data-view]').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === viewId);
+  });
+  document.querySelectorAll('.bnav-item[data-view]').forEach(n => {
     n.classList.toggle('active', n.dataset.view === viewId);
   });
 
@@ -251,8 +254,11 @@ document.getElementById('task-input')?.addEventListener('keydown', e => {
 // ── Badges ─────────────────────────────────────────────────────
 function updateBadges() {
   const active = getTasks().filter(t => !t.done).length;
-  const badge = document.getElementById('badge-reminders');
-  if (badge) badge.textContent = active > 0 ? active : '';
+  const val = active > 0 ? active : '';
+  const badge  = document.getElementById('badge-reminders');
+  const bnavBadge = document.getElementById('bnav-badge-reminders');
+  if (badge)     badge.textContent     = val;
+  if (bnavBadge) bnavBadge.textContent = val;
 }
 
 
