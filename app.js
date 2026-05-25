@@ -653,6 +653,106 @@ document.getElementById('news-refresh-btn')?.addEventListener('click', () => {
 
 
 // ══════════════════════════════════════════════════════════════
+//  COMMAND BAR
+// ══════════════════════════════════════════════════════════════
+
+const HELP_TEXT = 'go · task [text] at [time] · event [text] at [time] · weather · clear · help';
+
+const CMDS = [
+  // ── Navigation ───────────────────────────────────────────────
+  { re: /^(go\s+)?(home|dashboard)$/i,
+    run: ()  => { navigate('dashboard'); return '→ DASHBOARD'; } },
+  { re: /^(go\s+)?(tasks?|reminders?)$/i,
+    run: ()  => { navigate('reminders'); return '→ TASKS'; } },
+  { re: /^(go\s+)?(cal(endar)?)$/i,
+    run: ()  => { navigate('calendar');  return '→ CALENDAR'; } },
+  { re: /^(go\s+)?(news|feed)$/i,
+    run: ()  => { navigate('news');      return '→ NEWS FEED'; } },
+  { re: /^(go\s+)?(inbox|mail|email)$/i,
+    run: ()  => { navigate('inbox');     return '→ INBOX'; } },
+
+  // ── Task: "task Buy milk" / "task Buy milk at 14:00" ─────────
+  { re: /^(?:add\s+)?task\s+(.+?)(?:\s+at\s+(\d{1,2}:\d{2}))?$/i,
+    run: (m) => {
+      addTask(m[1].trim(), m[2] || '');
+      return `✓ TASK ADDED${m[2] ? ' @ ' + m[2] : ''}`;
+    }
+  },
+
+  // ── Event: "event Board meeting at 10:00" ────────────────────
+  { re: /^(?:add\s+)?event\s+(.+?)(?:\s+at\s+(\d{1,2}:\d{2}))?$/i,
+    run: (m) => {
+      const t  = new Date();
+      const ds = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+      selectedDate = ds;
+      addEvent(m[1].trim(), m[2] || '');
+      return `✓ EVENT ADDED${m[2] ? ' @ ' + m[2] : ''} — TODAY`;
+    }
+  },
+
+  // ── Weather ───────────────────────────────────────────────────
+  { re: /^weather$/i,
+    run: () => { loadWeather(); return '↺ REFRESHING WEATHER...'; } },
+
+  // ── Clear ─────────────────────────────────────────────────────
+  { re: /^clear$/i,
+    run: () => { hideCmdResponse(); return null; } },
+
+  // ── Help ──────────────────────────────────────────────────────
+  { re: /^(help|\?)$/i,
+    run: () => HELP_TEXT },
+];
+
+function runCommand(raw) {
+  const input = raw.trim();
+  if (!input) return;
+  for (const cmd of CMDS) {
+    const m = input.match(cmd.re);
+    if (m) {
+      const msg = cmd.run(m);
+      if (msg) showCmdResponse(msg, false);
+      return;
+    }
+  }
+  showCmdResponse('? UNKNOWN COMMAND — type help', true);
+}
+
+let cmdFadeTimer = null;
+function showCmdResponse(msg, isErr = false) {
+  const el = document.getElementById('cmd-response');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'cmd-response visible' + (isErr ? ' err' : '');
+  clearTimeout(cmdFadeTimer);
+  cmdFadeTimer = setTimeout(hideCmdResponse, 4000);
+}
+function hideCmdResponse() {
+  const el = document.getElementById('cmd-response');
+  if (el) el.className = 'cmd-response';
+}
+
+// Wire up
+const cmdInput = document.getElementById('cmd-input');
+cmdInput?.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const val = cmdInput.value.trim();
+  cmdInput.value = '';
+  runCommand(val);
+});
+// Focus command bar with keyboard shortcut (desktop: /)
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== cmdInput) {
+    e.preventDefault();
+    cmdInput?.focus();
+  }
+  if (e.key === 'Escape' && document.activeElement === cmdInput) {
+    cmdInput?.blur();
+    hideCmdResponse();
+  }
+});
+
+
+// ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
 seedDefaultTasks();

@@ -294,10 +294,11 @@
 
       <div style="flex:1"></div>
 
-      <div class="command-bar">
+      <div class="command-bar" id="command-bar">
+        <div class="cmd-response" id="cmd-response"></div>
         <div class="command-input-wrap">
           <span class="command-prompt">J:&gt;</span>
-          <input class="command-input" placeholder="Ask JARVIS anything..." />
+          <input class="command-input" id="cmd-input" placeholder="type 'help' for commands..." autocomplete="off" />
         </div>
       </div>
 

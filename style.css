@@ -279,10 +279,30 @@ body::after {
 .chart-label { flex: 1; text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 8px; color: var(--muted); }
 
 /* Command bar */
-.command-bar { padding: 10px 14px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border); position: sticky; bottom: 0; }
+.command-bar {
+  padding: 8px 14px 10px;
+  background: rgba(0,0,0,0.35);
+  border-top: 1px solid var(--border);
+  position: sticky; bottom: 0;
+}
+.cmd-response {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  color: var(--accent3);
+  padding-bottom: 5px;
+  min-height: 0; max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.4s ease;
+  opacity: 0;
+}
+.cmd-response.visible {
+  max-height: 20px;
+  opacity: 1;
+}
+.cmd-response.err { color: var(--accent2); }
 .command-input-wrap { display: flex; align-items: center; gap: 8px; background: var(--dim); border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; }
 .command-prompt { font-family: 'Share Tech Mono', monospace; color: var(--accent); font-size: 13px; }
-.command-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+.command-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 12px; user-select: text; }
 .command-input::placeholder { color: var(--muted); }
 
 /* Loading state */
@@ -533,14 +553,21 @@ body::after {
     overflow-y: auto;
     overflow-x: hidden;
     height: 100%;
-    padding-bottom: 60px; /* clear the bottom nav */
+    padding-bottom: 116px; /* bottom nav (56) + command bar (~60) */
   }
 
   /* Sidebar hidden on mobile — use bottom nav instead */
   .sidebar { display: none; }
 
-  /* Command bar hidden on mobile — bottom nav handles navigation */
-  .command-bar { display: none; }
+  /* Command bar: fixed above the bottom nav */
+  .command-bar {
+    position: fixed;
+    bottom: 56px; left: 0; right: 0;
+    z-index: 150;
+    background: rgba(6,10,15,0.97);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
 
   /* Center: don't create its own scroll context, let .main scroll */
   .center {
