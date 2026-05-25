@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#060a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+<title>JARVIS — Daily Dashboard</title>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      JARVIS
+    </div>
+    <div class="topbar-center">
+      SYSTEM ACTIVE &nbsp;|&nbsp; <span id="live-time">--:--:--</span> &nbsp;|&nbsp; DAR ES SALAAM, TZ
+    </div>
+    <div class="topbar-right">
+      <span class="status-pill status-ok">GMAIL ● ONLINE</span>
+      <span class="status-pill status-ok">NEWS ● LIVE</span>
+      <span class="status-pill status-warn">CALENDAR ● SYNC</span>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="sidebar">
+      <div class="nav-section-label">MODULES</div>
+      <div class="nav-item active"><span class="nav-icon">⬡</span> Dashboard</div>
+      <div class="nav-item"><span class="nav-icon">✉</span> Inbox <span class="nav-badge">7</span></div>
+      <div class="nav-item"><span class="nav-icon">◎</span> Reminders <span class="nav-badge">3</span></div>
+      <div class="nav-item"><span class="nav-icon">▦</span> News Feed</div>
+      <div class="nav-item"><span class="nav-icon">◷</span> Calendar</div>
+      <div class="nav-item"><span class="nav-icon">◈</span> Tasks</div>
+
+      <div class="nav-section-label" style="margin-top:8px">BUSINESSES</div>
+      <div class="nav-item"><span class="nav-icon">◆</span> Ali Distributors</div>
+      <div class="nav-item"><span class="nav-icon">◆</span> Twigaz</div>
+      <div class="nav-item"><span class="nav-icon">◆</span> EASWIL</div>
+      <div class="nav-item"><span class="nav-icon">◆</span> Alishoptz</div>
+      <div class="nav-item"><span class="nav-icon">◆</span> IMH Associates</div>
+
+      <div class="nav-section-label" style="margin-top:8px">SETTINGS</div>
+      <div class="nav-item"><span class="nav-icon">⚙</span> Integrations</div>
+      <div class="nav-item"><span class="nav-icon">◑</span> Preferences</div>
+
+      <div class="sidebar-footer">
+        <div class="avatar-row">
+          <div class="avatar">SM</div>
+          <div class="avatar-info">
+            <div class="avatar-name">Saif Mawji</div>
+            <div class="avatar-role">COMMANDER IN CHIEF</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="center">
+
+      <div class="greeting-card">
+        <div class="greeting-main">Good morning, <span>Saif.</span></div>
+        <div class="greeting-sub" id="greeting-sub">// MON 25 MAY 2026 &nbsp;·&nbsp; 5 ITEMS NEED ATTENTION</div>
+        <div class="greeting-stats">
+          <div class="gstat"><div class="gstat-num">7</div><div class="gstat-label">UNREAD EMAILS</div></div>
+          <div class="gstat"><div class="gstat-num">3</div><div class="gstat-label">DUE TODAY</div></div>
+          <div class="gstat"><div class="gstat-num">2</div><div class="gstat-label">MEETINGS</div></div>
+          <div class="gstat"><div class="gstat-num">12</div><div class="gstat-label">NEWS ITEMS</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">REMINDERS &amp; TASKS</div>
+          <div class="card-action">+ ADD</div>
+        </div>
+        <div class="reminder-item reminder-urgent" onclick="toggleDone(this)">
+          <div class="reminder-check"></div>
+          <div class="reminder-text">VAT reconciliation March 2025 — submit to TRA</div>
+          <div class="reminder-time">09:00 !</div>
+        </div>
+        <div class="reminder-item" onclick="toggleDone(this)">
+          <div class="reminder-check"></div>
+          <div class="reminder-text">Twigaz WIP drum recount — factory floor</div>
+          <div class="reminder-time">11:00</div>
+        </div>
+        <div class="reminder-item reminder-done" onclick="toggleDone(this)">
+          <div class="reminder-check">✓</div>
+          <div class="reminder-text">Review EASWIL cash flow projection</div>
+          <div class="reminder-time">Done</div>
+        </div>
+        <div class="reminder-item" onclick="toggleDone(this)">
+          <div class="reminder-check"></div>
+          <div class="reminder-text">Kariakoo business licence renewal</div>
+          <div class="reminder-time">EOD</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">NEWS FEED</div>
+          <div class="card-action">REFRESH</div>
+        </div>
+        <div class="news-item">
+          <span class="news-tag tag-tz">TZ</span>
+          <div>
+            <div class="news-headline">TRA announces updated EFD compliance requirements for Q3 2026</div>
+            <div class="news-meta">The Citizen &nbsp;·&nbsp; 42 min ago</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <span class="news-tag tag-biz">BIZ</span>
+          <div>
+            <div class="news-headline">Tanzania shilling stabilises at 2,640 against USD after brief volatility</div>
+            <div class="news-meta">Bloomberg Africa &nbsp;·&nbsp; 1 hr ago</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <span class="news-tag tag-tech">TECH</span>
+          <div>
+            <div class="news-headline">Anthropic releases Claude 4.6 with expanded agentic capabilities</div>
+            <div class="news-meta">TechCrunch &nbsp;·&nbsp; 2 hr ago</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <span class="news-tag tag-tz">TZ</span>
+          <div>
+            <div class="news-headline">Dar es Salaam port throughput hits record high in April 2026</div>
+            <div class="news-meta">Daily News &nbsp;·&nbsp; 3 hr ago</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <span class="news-tag tag-biz">BIZ</span>
+          <div>
+            <div class="news-headline">East Africa manufacturing sector reports 8.2% growth in Q1 2026</div>
+            <div class="news-meta">Reuters Africa &nbsp;·&nbsp; 4 hr ago</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="right-panel">
+
+      <div class="panel-section">
+        <div class="panel-header">WEATHER // DAR ES SALAAM</div>
+        <div class="weather-block">
+          <div class="weather-icon">⛅</div>
+          <div>
+            <div class="weather-temp">29°C</div>
+            <div class="weather-city">DAR ES SALAAM, TZ</div>
+            <div class="weather-desc">Partly Cloudy · Humidity 78%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-header">GMAIL INBOX <span style="margin-left:auto;color:var(--accent2)">7 UNREAD</span></div>
+        <div class="email-item unread">
+          <div class="email-sender">TRA Tanzania <span class="email-time">08:14</span></div>
+          <div class="email-subject">Notice: Ref 111153817 — Response required</div>
+        </div>
+        <div class="email-item unread">
+          <div class="email-sender">Factory Manager <span class="email-time">07:52</span></div>
+          <div class="email-subject">Twigaz morning production report attached</div>
+        </div>
+        <div class="email-item unread">
+          <div class="email-sender">Selcom Paytech <span class="email-time">07:30</span></div>
+          <div class="email-subject">Monthly settlement statement — May 2026</div>
+        </div>
+        <div class="email-item">
+          <div class="email-sender">Ali Distributors <span class="email-time">Yesterday</span></div>
+          <div class="email-subject">Vehicle insurance renewal — fleet update</div>
+        </div>
+        <div style="padding:8px 14px; font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--muted); cursor:pointer; text-align:center;">VIEW ALL →</div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-header">BUSINESS PULSE</div>
+        <div class="stat-grid">
+          <div class="stat-cell"><div class="stat-val val-blue">2,640</div><div class="stat-label">TZS/USD</div></div>
+          <div class="stat-cell"><div class="stat-val val-orange">580kg</div><div class="stat-label">WIP GAP</div></div>
+          <div class="stat-cell"><div class="stat-val val-green">94%</div><div class="stat-label">FLEET OK</div></div>
+          <div class="stat-cell"><div class="stat-val val-orange">52</div><div class="stat-label">TRA UNMATCHED</div></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-header">ACTIVITY — LAST 7 DAYS</div>
+        <div class="mini-chart">
+          <div class="chart-bars">
+            <div class="bar" style="height:40%"></div>
+            <div class="bar" style="height:65%"></div>
+            <div class="bar" style="height:50%"></div>
+            <div class="bar" style="height:80%"></div>
+            <div class="bar" style="height:45%"></div>
+            <div class="bar" style="height:90%"></div>
+            <div class="bar today" style="height:70%"></div>
+          </div>
+          <div class="chart-labels">
+            <div class="chart-label">M</div>
+            <div class="chart-label">T</div>
+            <div class="chart-label">W</div>
+            <div class="chart-label">T</div>
+            <div class="chart-label">F</div>
+            <div class="chart-label">S</div>
+            <div class="chart-label" style="color:var(--accent)">S</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div class="command-bar">
+        <div class="command-input-wrap">
+          <span class="command-prompt">J:&gt;</span>
+          <input class="command-input" placeholder="Ask JARVIS anything..." />
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function tick() {
+    const now = new Date();
+    document.getElementById('live-time').textContent = now.toTimeString().split(' ')[0];
+  }
+  tick(); setInterval(tick, 1000);
+
+  function toggleDone(el) {
+    const isDone = el.classList.toggle('reminder-done');
+    const check = el.querySelector('.reminder-check');
+    check.textContent = isDone ? '✓' : '';
+  }
+</script>
+<script src="app.js"></script>
+
+</body>
+</html>

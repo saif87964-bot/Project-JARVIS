@@ -1,0 +1,12 @@
+{
+  "name": "jarvis",
+  "version": "1.0.0",
+  "description": "Saif's personal daily dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "jarvis",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "8888", "."],
+      "port": 8888
+    }
+  ]
+}
