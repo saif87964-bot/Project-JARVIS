@@ -1,13 +1,39 @@
 {
   "name": "JARVIS",
   "short_name": "JARVIS",
-  "description": "Saif's daily command center",
+  "description": "Saif's personal daily command centre — tasks, calendar, news & business pulse.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#060a0f",
   "theme_color": "#060a0f",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tasks",
+      "short_name": "Tasks",
+      "url": "/#reminders",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Calendar",
+      "short_name": "Calendar",
+      "url": "/#calendar",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "News Feed",
+      "short_name": "News",
+      "url": "/#news",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    }
   ]
 }

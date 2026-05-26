@@ -7,13 +7,28 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="JARVIS">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="JARVIS">
 <link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
 <title>JARVIS — Daily Dashboard</title>
 </head>
 <body>
 <div class="app">
+
+  <!-- ── Install prompt ──────────────────────────────────────── -->
+  <div class="install-banner" id="install-banner">
+    <div class="install-text">
+      <span class="install-icon">⬡</span>
+      ADD JARVIS TO HOME SCREEN
+    </div>
+    <div class="install-actions">
+      <button class="install-btn" id="install-btn">INSTALL</button>
+      <button class="install-dismiss" id="install-dismiss">×</button>
+    </div>
+  </div>
 
   <!-- ── Topbar ─────────────────────────────────────────────── -->
   <div class="topbar">

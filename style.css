@@ -541,6 +541,48 @@ body::after {
 }
 .cal-event-del:hover { color: var(--accent2); }
 
+/* ── Install prompt ──────────────────────────────────────────── */
+.install-banner {
+  position: fixed; z-index: 400;
+  bottom: 80px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px;
+  padding: 11px 16px;
+  background: rgba(6,10,15,0.97);
+  border: 1px solid rgba(0,212,255,0.35);
+  border-radius: 4px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px rgba(0,212,255,0.12);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease, bottom 0.3s ease;
+  white-space: nowrap;
+}
+.install-banner.visible { opacity: 1; pointer-events: all; bottom: 90px; }
+.install-icon { color: var(--accent); font-size: 16px; }
+.install-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.install-actions { display: flex; align-items: center; gap: 8px; }
+.install-btn {
+  font-family: 'Share Tech Mono', monospace; font-size: 10px;
+  letter-spacing: 1px; color: var(--accent);
+  background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.35);
+  border-radius: 2px; padding: 4px 12px; cursor: pointer;
+  transition: background 0.15s;
+}
+.install-btn:hover { background: rgba(0,212,255,0.2); }
+.install-dismiss {
+  font-size: 18px; color: var(--muted); background: none;
+  border: none; cursor: pointer; line-height: 1; padding: 0 4px;
+  transition: color 0.15s;
+}
+.install-dismiss:hover { color: var(--text); }
+@media (min-width: 769px) {
+  .install-banner { left: auto; right: 20px; transform: none; bottom: 70px; }
+  .install-banner.visible { bottom: 80px; }
+}
+
 /* ── Bottom nav (desktop: hidden) ───────────────────────────── */
 .bottom-nav { display: none; }
 

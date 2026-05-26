@@ -1,4 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#534AB7"/>
-  <text x="256" y="340" font-family="system-ui,sans-serif" font-size="280" font-weight="700" fill="white" text-anchor="middle">J</text>
+  <defs>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-sm" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" fill="#060a0f"/>
+
+  <!-- Subtle grid -->
+  <g stroke="#00d4ff" stroke-width="1" opacity="0.06">
+    <line x1="0" y1="128" x2="512" y2="128"/>
+    <line x1="0" y1="256" x2="512" y2="256"/>
+    <line x1="0" y1="384" x2="512" y2="384"/>
+    <line x1="128" y1="0" x2="128" y2="512"/>
+    <line x1="256" y1="0" x2="256" y2="512"/>
+    <line x1="384" y1="0" x2="384" y2="512"/>
+  </g>
+
+  <!-- Corner brackets -->
+  <g stroke="#00d4ff" stroke-width="14" fill="none" stroke-linecap="square" opacity="0.75" filter="url(#glow-sm)">
+    <path d="M68,116 L68,68 L116,68"/>
+    <path d="M396,68 L444,68 L444,116"/>
+    <path d="M68,396 L68,444 L116,444"/>
+    <path d="M444,396 L444,444 L396,444"/>
+  </g>
+
+  <!-- J glyph — built from rectangles so no font dependency -->
+  <!-- Top bar -->
+  <rect x="168" y="128" width="176" height="40" rx="6" fill="#00d4ff" filter="url(#glow)"/>
+  <!-- Vertical stem -->
+  <rect x="260" y="128" width="40" height="210" rx="6" fill="#00d4ff" filter="url(#glow)"/>
+  <!-- Bottom serif / foot — left horizontal -->
+  <rect x="140" y="298" width="120" height="40" rx="6" fill="#00d4ff" filter="url(#glow)"/>
+  <!-- Left vertical of foot -->
+  <rect x="140" y="298" width="40" height="80" rx="6" fill="#00d4ff" filter="url(#glow)"/>
+  <!-- Rounded bottom -->
+  <path d="M140,360 Q140,418 200,418 Q256,418 256,360" stroke="#00d4ff" stroke-width="40" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+
+  <!-- Status dot -->
+  <circle cx="256" cy="455" r="14" fill="#39ff14" opacity="0.9" filter="url(#glow-sm)"/>
 </svg>

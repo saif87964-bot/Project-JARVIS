@@ -653,6 +653,49 @@ document.getElementById('news-refresh-btn')?.addEventListener('click', () => {
 
 
 // ══════════════════════════════════════════════════════════════
+//  PWA — INSTALL PROMPT
+// ══════════════════════════════════════════════════════════════
+
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Small delay so it doesn't flash immediately on load
+  setTimeout(() => {
+    document.getElementById('install-banner')?.classList.add('visible');
+  }, 3000);
+});
+
+document.getElementById('install-btn')?.addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('install-banner')?.classList.remove('visible');
+});
+
+document.getElementById('install-dismiss')?.addEventListener('click', () => {
+  document.getElementById('install-banner')?.classList.remove('visible');
+  // Don't re-show this session
+  deferredInstallPrompt = null;
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner')?.classList.remove('visible');
+  deferredInstallPrompt = null;
+  showCmdResponse('✓ JARVIS INSTALLED');
+});
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
+
+// ══════════════════════════════════════════════════════════════
 //  COMMAND BAR
 // ══════════════════════════════════════════════════════════════
 

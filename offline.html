@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#060a0f">
+<link rel="manifest" href="manifest.json">
+<title>JARVIS — Offline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@600&display=swap');
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --accent: #00d4ff; --accent3: #39ff14; --bg: #060a0f; --muted: #4a6a7a; --border: #1a3a52; }
+  html, body { height: 100%; background: var(--bg); color: var(--muted); overflow: hidden; }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.015) 2px, rgba(0,212,255,0.015) 4px);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .wrap {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; gap: 16px;
+    padding: 20px;
+  }
+
+  .logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px; letter-spacing: 10px;
+    color: var(--accent);
+    text-shadow: 0 0 24px rgba(0,212,255,0.5);
+  }
+  .logo-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    background: var(--accent3);
+    border-radius: 50%;
+    margin-right: 12px;
+    vertical-align: middle;
+    box-shadow: 0 0 8px var(--accent3);
+  }
+  .divider { width: 48px; height: 1px; background: var(--border); }
+  .status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--muted);
+    text-align: center; line-height: 2;
+  }
+  .status strong { color: #ff6b2b; }
+  .retry {
+    margin-top: 12px;
+    font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    letter-spacing: 2px; color: var(--accent);
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 2px; padding: 9px 24px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .retry:hover { background: rgba(0,212,255,0.18); }
+  .note {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 1px; color: var(--border);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><span class="logo-dot"></span>JARVIS</div>
+  <div class="divider"></div>
+  <div class="status">
+    <strong>NETWORK OFFLINE</strong><br>
+    RECONNECT TO RESUME LIVE DATA<br>
+    CACHED CONTENT AVAILABLE
+  </div>
+  <button class="retry" onclick="location.reload()">↺ &nbsp;RETRY CONNECTION</button>
+  <div class="note">JARVIS PWA — LOCAL CACHE ACTIVE</div>
+</div>
+</body>
+</html>
