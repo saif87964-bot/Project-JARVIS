@@ -227,6 +227,7 @@ body::after {
 .tag-tech { background: rgba(57,255,20,0.1);  border: 1px solid rgba(57,255,20,0.2);  color: var(--accent3); }
 .news-headline { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
 .news-meta { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+.news-stale-note { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); padding: 8px 14px; border-bottom: 1px solid var(--dim); letter-spacing: 0.05em; }
 
 /* ── Reminders ───────────────────────────────────────────────── */
 .reminder-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--dim); cursor: pointer; transition: background 0.15s; }

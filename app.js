@@ -539,9 +539,9 @@ function wxIcon(code) {
 // ══════════════════════════════════════════════════════════════
 
 const RSS_SOURCES = {
-  tz:   { url: 'https://feeds.bbci.co.uk/news/world/africa/rss.xml', label: 'BBC Africa' },
-  tech: { url: 'https://techcrunch.com/feed/',                        label: 'TechCrunch' },
-  biz:  { url: 'https://feeds.reuters.com/reuters/businessNews',      label: 'Reuters'    },
+  tz:   { url: 'https://feeds.bbci.co.uk/news/world/africa/rss.xml',  label: 'BBC Africa'   },
+  tech: { url: 'https://techcrunch.com/feed/',                          label: 'TechCrunch'   },
+  biz:  { url: 'https://www.theguardian.com/business/rss',              label: 'The Guardian' },
 };
 
 const TAG_CLASS = { tz: 'tag-tz', biz: 'tag-biz', tech: 'tag-tech' };
@@ -555,8 +555,15 @@ const FALLBACK_NEWS = [
   { tag:'biz',  h:'East Africa manufacturing sector reports 8.2% growth in Q1 2026',      t:'Reuters Africa' },
 ];
 
-let newsCache = {}; // keyed by feed type
+let newsCache = {}; // keyed by feed type — value is array (success), null (failed), or undefined (not yet tried)
 let currentNewsFeed = 'all';
+
+// Fetch helper with abort timeout
+function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(tid));
+}
 
 // ── Dashboard news preview (compact, mixed) ────────────────────
 async function loadNews() {
@@ -566,13 +573,30 @@ async function loadNews() {
 
   const items = [];
   for (const [key, src] of Object.entries(RSS_SOURCES)) {
+    let fetched = false;
+
+    // 1. Netlify Function (server-side — no CORS, no rate limit)
     try {
-      const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=2`;
-      const d = await (await fetch(url)).json();
-      if (d.status === 'ok' && d.items?.length) {
-        d.items.forEach(it => items.push({ tag: key, h: it.title, t: `${src.label} · ${timeAgo(new Date(it.pubDate))}` }));
+      const r = await fetchWithTimeout(`/.netlify/functions/news?feed=${key}`, 7000);
+      if (r.ok) {
+        const d = await r.json();
+        if (d.items?.length) {
+          d.items.slice(0, 2).forEach(it => items.push(it));
+          fetched = true;
+        }
       }
-    } catch { /* skip source */ }
+    } catch { /* fall through */ }
+
+    // 2. rss2json fallback (client-side, rate-limited)
+    if (!fetched) {
+      try {
+        const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=2`;
+        const d = await (await fetchWithTimeout(rssUrl, 5000)).json();
+        if (d.status === 'ok' && d.items?.length) {
+          d.items.forEach(it => items.push({ tag: key, h: it.title, t: `${src.label} · ${timeAgo(new Date(it.pubDate))}` }));
+        }
+      } catch { /* skip source */ }
+    }
   }
 
   const result = items.length ? items.slice(0, 5) : FALLBACK_NEWS;
@@ -588,18 +612,33 @@ async function loadFullNews() {
   if (!container) return;
   container.innerHTML = '<div class="loading">FETCHING FEED...</div>';
 
-  // Fetch all sources in parallel
+  // Fetch all sources in parallel — each tries Netlify fn → rss2json
   const fetches = Object.entries(RSS_SOURCES).map(async ([key, src]) => {
-    if (newsCache[key]) return;
+    if (newsCache[key] !== undefined) return; // already fetched (array=success, null=failed)
+
+    // 1. Netlify Function (server-side proxy — reliable, no CORS/rate limits)
     try {
-      const url = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=8`;
-      const d = await (await fetch(url)).json();
+      const r = await fetchWithTimeout(`/.netlify/functions/news?feed=${key}`, 8000);
+      if (r.ok) {
+        const d = await r.json();
+        if (d.items?.length) { newsCache[key] = d.items; return; }
+      }
+    } catch { /* fall through */ }
+
+    // 2. rss2json (client-side, free tier — rate-limited but worth trying)
+    try {
+      const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=8`;
+      const d = await (await fetchWithTimeout(rssUrl, 6000)).json();
       if (d.status === 'ok' && d.items?.length) {
         newsCache[key] = d.items.map(it => ({
           tag: key, h: it.title, t: `${src.label} · ${timeAgo(new Date(it.pubDate))}`
         }));
+        return;
       }
-    } catch { newsCache[key] = []; }
+    } catch { /* fall through */ }
+
+    // Both failed — mark null (falsy but defined, so retry only on explicit REFRESH)
+    newsCache[key] = null;
   });
   await Promise.all(fetches);
 
@@ -618,7 +657,17 @@ function renderFullNews() {
   }
 
   if (items.length === 0) {
-    container.innerHTML = '<div class="loading">NO ITEMS — REFRESH TO RETRY</div>';
+    // Live feeds offline — show curated fallback so the view is never empty
+    const fallback = currentNewsFeed === 'all'
+      ? FALLBACK_NEWS
+      : FALLBACK_NEWS.filter(n => n.tag === currentNewsFeed);
+    if (fallback.length) {
+      container.innerHTML =
+        '<div class="news-stale-note">// LIVE FEED UNAVAILABLE — SHOWING CURATED HEADLINES</div>' +
+        fallback.map(renderNewsItem).join('');
+      return;
+    }
+    container.innerHTML = '<div class="loading">NO ITEMS — PRESS REFRESH TO RETRY</div>';
     return;
   }
   container.innerHTML = items.map(renderNewsItem).join('');
@@ -641,7 +690,9 @@ document.querySelectorAll('.news-tab').forEach(btn => {
     currentNewsFeed = btn.dataset.feed;
     document.querySelectorAll('.news-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    if (Object.keys(newsCache).length === 0) loadFullNews();
+    // If no successful data at all yet, do a fresh load; otherwise just re-render
+    const hasData = Object.values(newsCache).some(v => v && v.length > 0);
+    if (!hasData && Object.keys(newsCache).length === 0) loadFullNews();
     else renderFullNews();
   });
 });
