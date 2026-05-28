@@ -2,6 +2,9 @@
   publish = "."
   functions = "netlify/functions"
 
+[functions]
+  timeout = 20   # seconds — needed for article-fetch + Claude API chain
+
 [dev]
   command = ""
   port = 8888

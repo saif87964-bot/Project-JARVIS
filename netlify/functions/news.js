@@ -74,8 +74,17 @@ function parseRSS(xml, label, tag) {
     };
     var title = field('title');
     var pub   = field('pubDate') || field('published') || field('updated') || field('dc:date');
+    // URL: RSS <link> text content, or Atom <link href="...">
+    var link  = field('link');
+    if (!link) {
+      var linkAtom = block.match(/<link[^>]+href=["']([^"']+)["']/i);
+      if (linkAtom) link = linkAtom[1];
+    }
+    // Description snippet (strip HTML, trim)
+    var desc = field('description') || field('summary') || field('content') || '';
+    desc = desc.slice(0, 400).replace(/\s+/g, ' ').trim();
     if (title) {
-      items.push({ tag: tag, h: title, t: label + (pub ? ' · ' + pub : '') });
+      items.push({ tag: tag, h: title, t: label + (pub ? ' · ' + pub : ''), u: link || '', d: desc });
     }
   }
   return items;

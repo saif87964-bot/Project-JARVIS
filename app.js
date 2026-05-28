@@ -593,7 +593,12 @@ async function loadNews() {
         const rssUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(src.url)}&count=2`;
         const d = await (await fetchWithTimeout(rssUrl, 5000)).json();
         if (d.status === 'ok' && d.items?.length) {
-          d.items.forEach(it => items.push({ tag: key, h: it.title, t: `${src.label} · ${timeAgo(new Date(it.pubDate))}` }));
+          d.items.forEach(it => items.push({
+            tag: key, h: it.title,
+            t: `${src.label} · ${timeAgo(new Date(it.pubDate))}`,
+            u: it.link || '',
+            d: (it.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400),
+          }));
         }
       } catch { /* skip source */ }
     }
@@ -631,7 +636,11 @@ async function loadFullNews() {
       const d = await (await fetchWithTimeout(rssUrl, 6000)).json();
       if (d.status === 'ok' && d.items?.length) {
         newsCache[key] = d.items.map(it => ({
-          tag: key, h: it.title, t: `${src.label} · ${timeAgo(new Date(it.pubDate))}`
+          tag: key,
+          h: it.title,
+          t: `${src.label} · ${timeAgo(new Date(it.pubDate))}`,
+          u: it.link || '',
+          d: (it.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400),
         }));
         return;
       }
@@ -674,13 +683,16 @@ function renderFullNews() {
 }
 
 function renderNewsItem(it) {
+  const clickable = !!it.u;
   return `
-    <div class="news-item">
+    <div class="news-item${clickable ? ' news-clickable' : ''}"
+         ${clickable ? `data-url="${esc(it.u)}" data-headline="${esc(it.h)}" data-meta="${esc(it.t)}" data-desc="${esc(it.d || '')}"` : ''}>
       <span class="news-tag ${TAG_CLASS[it.tag]}">${TAG_LABEL[it.tag]}</span>
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="news-headline">${esc(it.h)}</div>
         <div class="news-meta">${esc(it.t)}</div>
       </div>
+      ${clickable ? '<div class="news-arrow">›</div>' : ''}
     </div>`;
 }
 
@@ -700,6 +712,95 @@ document.querySelectorAll('.news-tab').forEach(btn => {
 document.getElementById('news-refresh-btn')?.addEventListener('click', () => {
   newsCache = {};
   loadFullNews();
+});
+
+
+// ══════════════════════════════════════════════════════════════
+//  ARTICLE SUMMARY MODAL
+// ══════════════════════════════════════════════════════════════
+
+const modalOverlay  = document.getElementById('article-modal-overlay');
+const modalBadge    = document.getElementById('modal-badge');
+const modalSource   = document.getElementById('modal-source');
+const modalHeadline = document.getElementById('modal-headline');
+const modalBody     = document.getElementById('modal-body');
+const modalLink     = document.getElementById('modal-link');
+
+function openArticleModal(url, headline, meta, rssDesc) {
+  // Reset
+  modalBadge.textContent = 'AI SUMMARY';
+  modalBadge.className   = 'article-modal-badge';
+  modalSource.textContent = meta || '';
+  modalHeadline.textContent = headline;
+  modalBody.innerHTML = `<div class="modal-loading"><span class="modal-spinner"></span>ANALYZING ARTICLE...</div>`;
+  modalLink.href = url;
+  modalLink.classList.remove('hidden');
+  modalOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Fetch summary
+  fetchWithTimeout(`/.netlify/functions/summarize?url=${encodeURIComponent(url)}`, 18000)
+    .then(r => r.json())
+    .then(data => {
+      if (data.summary) {
+        // Full AI summary
+        modalBody.innerHTML = data.summary
+          .split(/\n+/).filter(Boolean)
+          .map(p => `<p>${esc(p)}</p>`).join('');
+      } else if (data.error === 'api_key_missing') {
+        // No API key — show RSS snippet + setup instructions
+        modalBadge.textContent = 'ARTICLE PREVIEW';
+        modalBadge.className   = 'article-modal-badge badge-preview';
+        modalBody.innerHTML = (rssDesc
+          ? `<p>${esc(rssDesc)}</p>`
+          : '<p>No preview available.</p>') +
+          `<div class="modal-setup-note">
+            ⚙ <strong>AI summaries</strong> require an Anthropic API key.<br>
+            Add <code>ANTHROPIC_API_KEY</code> to your
+            <a href="https://app.netlify.com" target="_blank" rel="noopener">Netlify environment variables</a>
+            to enable this feature.
+          </div>`;
+      } else {
+        // Fetch failed — show RSS snippet gracefully
+        modalBadge.textContent = 'ARTICLE PREVIEW';
+        modalBadge.className   = 'article-modal-badge badge-preview';
+        modalBody.innerHTML = rssDesc
+          ? `<p>${esc(rssDesc)}</p>`
+          : '<p>Summary unavailable. Open the full article to read more.</p>';
+      }
+    })
+    .catch(() => {
+      modalBadge.textContent = 'ARTICLE PREVIEW';
+      modalBadge.className   = 'article-modal-badge badge-preview';
+      modalBody.innerHTML = rssDesc
+        ? `<p>${esc(rssDesc)}</p>`
+        : '<p>Summary unavailable. Open the full article to read more.</p>';
+    });
+}
+
+function closeArticleModal() {
+  modalOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close handlers
+document.getElementById('article-modal-close')?.addEventListener('click', closeArticleModal);
+modalOverlay?.addEventListener('click', e => {
+  if (e.target === modalOverlay) closeArticleModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modalOverlay?.classList.contains('open')) closeArticleModal();
+});
+
+// News item click delegation (covers dashboard + full news view)
+document.addEventListener('click', e => {
+  const item = e.target.closest('.news-item[data-url]');
+  if (!item) return;
+  const url  = item.dataset.url;
+  const h    = item.dataset.headline;
+  const meta = item.dataset.meta;
+  const desc = item.dataset.desc;
+  if (url) openArticleModal(url, h, meta, desc);
 });
 
 

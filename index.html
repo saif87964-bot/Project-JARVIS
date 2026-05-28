@@ -346,6 +346,28 @@
     </div>
   </nav>
 
+  <!-- ── Article Summary Modal ──────────────────────────────────── -->
+  <div class="article-modal-overlay" id="article-modal-overlay" role="dialog" aria-modal="true">
+    <div class="article-modal">
+      <div class="article-modal-header">
+        <span class="article-modal-badge" id="modal-badge">AI SUMMARY</span>
+        <span class="article-modal-source" id="modal-source"></span>
+        <button class="article-modal-close" id="article-modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="article-modal-headline" id="modal-headline"></div>
+      <div class="article-modal-body" id="modal-body">
+        <div class="modal-loading">
+          <span class="modal-spinner"></span>ANALYZING ARTICLE...
+        </div>
+      </div>
+      <div class="article-modal-footer">
+        <a class="article-modal-link" id="modal-link" href="#" target="_blank" rel="noopener noreferrer">
+          READ FULL ARTICLE →
+        </a>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <script src="app.js"></script>
