@@ -271,8 +271,13 @@ body::after {
 .cash-type-btn.active[data-type="debit"]  { border-color: var(--accent2); color: var(--accent2); background: rgba(255,107,43,0.1); }
 .cash-type-btn.active[data-type="credit"] { border-color: var(--accent3); color: var(--accent3); background: rgba(57,255,20,0.1);  }
 
-/* Category chips */
-.cash-cats { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--dim); }
+/* Category chips — horizontal scroll, no wrap (matches news tabs behaviour) */
+.cash-cats {
+  display: flex; flex-wrap: nowrap; gap: 6px;
+  padding: 10px 14px; border-bottom: 1px solid var(--dim);
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.cash-cats::-webkit-scrollbar { display: none; }
 .cash-cat-chip {
   font-family: 'Share Tech Mono', monospace; font-size: 9px; letter-spacing: 0.08em;
   padding: 3px 9px; border-radius: 2px;
@@ -937,4 +942,9 @@ body::after {
   /* News + reminders: full width, no truncation issues */
   .news-headline { font-size: 13px; }
   .email-subject { font-size: 11px; }
+
+  /* Cash module mobile tweaks */
+  .cash-bal-amount { font-size: 30px; }
+  .cash-type-btn   { font-size: 9px; padding: 3px 7px; letter-spacing: 0; }
+  .cash-amount-field { max-width: 110px; }
 }
