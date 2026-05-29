@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v11';
+  var K='jv_bust_v12';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,14 +27,17 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 <style>
+/* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
-  .right-panel .panel-section { display: none !important; }
-  .right-panel { border-top: none !important; }
+  /* Right panel is completely removed from layout on mobile */
+  .right-panel { display: none !important; }
+  /* Command bar: fixed full-width above bottom nav */
   .command-bar {
     position: fixed !important;
     bottom: 56px !important; left: 0 !important; right: 0 !important;
+    width: auto !important;
     z-index: 150 !important;
     background: rgba(6,10,15,0.97) !important;
     border-top: 1px solid var(--border) !important;
@@ -400,19 +403,18 @@
         </div>
       </div>
 
-      <div style="flex:1"></div>
-
-      <div class="command-bar" id="command-bar">
-        <div class="cmd-response" id="cmd-response"></div>
-        <div class="command-input-wrap">
-          <span class="command-prompt">J:&gt;</span>
-          <input class="command-input" id="cmd-input" placeholder="type 'help' for commands..." autocomplete="off" />
-        </div>
-      </div>
-
     </div><!-- /right-panel -->
 
   </div><!-- /main -->
+
+  <!-- Command bar lives outside right-panel so .right-panel {display:none} on mobile doesn't hide it -->
+  <div class="command-bar" id="command-bar">
+    <div class="cmd-response" id="cmd-response"></div>
+    <div class="command-input-wrap">
+      <span class="command-prompt">J:&gt;</span>
+      <input class="command-input" id="cmd-input" placeholder="type 'help' for commands..." autocomplete="off" />
+    </div>
+  </div>
   <!-- ── Bottom Nav (mobile only) ───────────────────────────── -->
   <nav class="bottom-nav">
     <div class="bnav-item active" data-view="dashboard">

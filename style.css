@@ -343,7 +343,7 @@ body::after {
 .reminder-urgent .reminder-time { color: var(--accent2); }
 
 /* ── Right panel ─────────────────────────────────────────────── */
-.right-panel { border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow-y: auto; }
+.right-panel { border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 60px; }
 .panel-section { border-bottom: 1px solid var(--dim); }
 .panel-header { display: flex; align-items: center; padding: 9px 14px; font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; }
 
@@ -383,9 +383,14 @@ body::after {
 /* Command bar */
 .command-bar {
   padding: 8px 14px 10px;
-  background: rgba(0,0,0,0.35);
+  background: rgba(6,10,15,0.97);
   border-top: 1px solid var(--border);
-  position: sticky; bottom: 0;
+  /* Fixed to bottom-right on desktop, matching right panel width */
+  position: fixed;
+  bottom: 0; right: 0;
+  width: 260px;
+  z-index: 100;
+  backdrop-filter: blur(6px);
 }
 .cmd-response {
   font-family: 'Share Tech Mono', monospace;
@@ -850,13 +855,11 @@ body::after {
   /* Sidebar hidden on mobile — use bottom nav instead */
   .sidebar { display: none; }
 
-  /* Command bar: fixed above the bottom nav */
+  /* Command bar: full-width, fixed above bottom nav */
   .command-bar {
-    position: fixed;
     bottom: 56px; left: 0; right: 0;
+    width: auto;
     z-index: 150;
-    background: rgba(6,10,15,0.97);
-    border-top: 1px solid var(--border);
     backdrop-filter: blur(12px);
   }
 
@@ -867,16 +870,9 @@ body::after {
     gap: 10px;
   }
 
-  /* Right panel: hide all panel sections on mobile.
-     The command bar is inside right-panel but uses position:fixed,
-     so it escapes the parent and stays pinned above the bottom nav. */
-  .right-panel {
-    overflow-y: visible;
-    border-left: none;
-    border-top: none;
-  }
-  .right-panel .panel-section { display: none; }
-  .right-panel > div[style*="flex:1"] { display: none; }
+  /* Right panel: completely off on mobile.
+     Command bar has been moved outside this element in the HTML. */
+  .right-panel { display: none; }
 
   /* Bottom nav */
   .bottom-nav {

@@ -1,8 +1,8 @@
-const CACHE = 'jarvis-v11';
+const CACHE = 'jarvis-v12';
 const SHELL = [
   '/',
   '/index.html',
-  '/style.css?v=11',
+  '/style.css?v=12',
   '/app.js?v=11',
   '/manifest.json',
   '/icon.svg',
@@ -11,7 +11,7 @@ const SHELL = [
 
 // These files change on every deploy — always fetch fresh from network.
 // Cache is kept as offline fallback only.
-const NETWORK_FIRST = new Set(['/', '/index.html', '/style.css', '/app.js', '/style.css?v=11', '/app.js?v=11']);
+const NETWORK_FIRST = new Set(['/', '/index.html', '/style.css', '/app.js', '/style.css?v=12', '/app.js?v=11']);
 
 // Install: pre-cache the app shell
 self.addEventListener('install', e => {
