@@ -867,21 +867,16 @@ body::after {
     gap: 10px;
   }
 
-  /* Right panel: full width, natural height, no independent scroll */
+  /* Right panel: hide all panel sections on mobile.
+     The command bar is inside right-panel but uses position:fixed,
+     so it escapes the parent and stays pinned above the bottom nav. */
   .right-panel {
     overflow-y: visible;
     border-left: none;
-    border-top: 1px solid var(--dim);
-    /* Hide the spacer div so command bar doesn't float */
+    border-top: none;
   }
+  .right-panel .panel-section { display: none; }
   .right-panel > div[style*="flex:1"] { display: none; }
-
-  /* Command bar sticks to bottom of the page on mobile */
-  .command-bar {
-    position: sticky;
-    bottom: 0;
-    z-index: 50;
-  }
 
   /* Bottom nav */
   .bottom-nav {
