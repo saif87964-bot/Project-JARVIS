@@ -22,7 +22,7 @@ const SHELL = [
   '/src/modules/theme.js',
   '/src/modules/briefing.js',
   '/manifest.json',
-  '/icon.svg',
+  '/icon.png',
   '/offline.html',
 ];
 

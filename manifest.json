@@ -10,9 +10,9 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "icon.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
@@ -21,19 +21,19 @@
       "name": "Tasks",
       "short_name": "Tasks",
       "url": "/#reminders",
-      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+      "icons": [{ "src": "icon.png", "sizes": "any" }]
     },
     {
       "name": "Calendar",
       "short_name": "Calendar",
       "url": "/#calendar",
-      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+      "icons": [{ "src": "icon.png", "sizes": "any" }]
     },
     {
       "name": "News Feed",
       "short_name": "News",
       "url": "/#news",
-      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+      "icons": [{ "src": "icon.png", "sizes": "any" }]
     }
   ]
 }
