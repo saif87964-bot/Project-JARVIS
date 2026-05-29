@@ -56,6 +56,7 @@
       <div class="nav-item" data-view="reminders"><span class="nav-icon">◎</span> Reminders <span class="nav-badge" id="badge-reminders"></span></div>
       <div class="nav-item" data-view="news"><span class="nav-icon">▦</span> News Feed</div>
       <div class="nav-item" data-view="calendar"><span class="nav-icon">◷</span> Calendar</div>
+      <div class="nav-item" data-view="cash"><span class="nav-icon">◉</span> Cash</div>
       <div class="nav-item" data-view="reminders"><span class="nav-icon">◈</span> Tasks</div>
 
       <div class="nav-section-label" style="margin-top:8px">BUSINESSES</div>
@@ -223,6 +224,68 @@
 
       </div><!-- /view-calendar -->
 
+      <!-- ▸ CASH / PETTY CASH ─────────────────────────────────── -->
+      <div id="view-cash" class="view">
+
+        <!-- Running balance card -->
+        <div class="card cash-balance-card">
+          <div class="cash-bal-label">CASH IN HAND</div>
+          <div class="cash-bal-amount" id="cash-balance">TZS —</div>
+          <div class="cash-today-row">
+            <div class="cash-today-item">
+              <div class="cash-today-val in" id="cash-today-in">TZS 0</div>
+              <div class="cash-today-lbl">TODAY IN</div>
+            </div>
+            <div class="cash-today-divider"></div>
+            <div class="cash-today-item">
+              <div class="cash-today-val out" id="cash-today-out">TZS 0</div>
+              <div class="cash-today-lbl">TODAY OUT</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add transaction -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">NEW ENTRY</div>
+            <div class="cash-type-toggle">
+              <button class="cash-type-btn active" data-type="debit">− EXPENSE</button>
+              <button class="cash-type-btn" data-type="credit">+ TOP UP</button>
+            </div>
+          </div>
+          <!-- Category chips -->
+          <div class="cash-cats">
+            <button class="cash-cat-chip" data-cat="food">FOOD</button>
+            <button class="cash-cat-chip" data-cat="transport">TRANSPORT</button>
+            <button class="cash-cat-chip" data-cat="fuel">FUEL</button>
+            <button class="cash-cat-chip" data-cat="business">BUSINESS</button>
+            <button class="cash-cat-chip" data-cat="shopping">SHOPPING</button>
+            <button class="cash-cat-chip" data-cat="utilities">UTILITIES</button>
+            <button class="cash-cat-chip active" data-cat="misc">MISC</button>
+          </div>
+          <!-- Amount + note + submit -->
+          <div class="task-add-form">
+            <input id="cash-amount-input" class="task-input cash-amount-field"
+                   type="number" placeholder="Amount (TZS)" min="1" step="1" autocomplete="off" />
+            <input id="cash-note-input" class="task-input"
+                   placeholder="Note (optional)" maxlength="80" autocomplete="off" />
+            <button class="task-add-btn" id="cash-add-btn">+ ADD</button>
+          </div>
+        </div>
+
+        <!-- Transaction log -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">TRANSACTION LOG</div>
+            <div class="card-action" id="cash-export-btn">EXPORT CSV</div>
+          </div>
+          <div id="cash-log">
+            <div class="loading">NO ENTRIES YET — ADD A TOP UP TO SET YOUR OPENING BALANCE</div>
+          </div>
+        </div>
+
+      </div><!-- /view-cash -->
+
       <!-- ▸ SETTINGS (stub) ──────────────────────────────────── -->
       <div id="view-settings" class="view">
         <div class="card">
@@ -339,10 +402,9 @@
       <span class="bnav-icon">▦</span>
       <span class="bnav-label">NEWS</span>
     </div>
-    <div class="bnav-item" data-view="inbox">
-      <span class="bnav-icon">✉</span>
-      <span class="bnav-label">INBOX</span>
-      <span class="bnav-badge">7</span>
+    <div class="bnav-item" data-view="cash">
+      <span class="bnav-icon">◉</span>
+      <span class="bnav-label">CASH</span>
     </div>
   </nav>
 

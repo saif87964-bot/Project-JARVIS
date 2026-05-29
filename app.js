@@ -77,6 +77,7 @@ function navigate(viewId) {
   if (viewId === 'reminders') renderTasks();
   if (viewId === 'news')      loadFullNews();
   if (viewId === 'calendar')  initCalendar();
+  if (viewId === 'cash')      initCash();
 
   // Update hash (minus # for dashboard)
   history.replaceState(null, '', viewId === 'dashboard' ? ' ' : '#' + viewId);
@@ -498,6 +499,211 @@ function initCalendar() {
   const todayStr = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
   selectDay(todayStr);
 }
+
+
+// ══════════════════════════════════════════════════════════════
+//  PETTY CASH MODULE
+// ══════════════════════════════════════════════════════════════
+
+const CASH_KEY = 'jv_petty_cash';
+
+const CASH_CATS = [
+  { id: 'food',      label: 'FOOD'      },
+  { id: 'transport', label: 'TRANSPORT' },
+  { id: 'fuel',      label: 'FUEL'      },
+  { id: 'business',  label: 'BUSINESS'  },
+  { id: 'shopping',  label: 'SHOPPING'  },
+  { id: 'utilities', label: 'UTILITIES' },
+  { id: 'misc',      label: 'MISC'      },
+];
+
+let cashTxType = 'debit';
+let cashTxCat  = 'misc';
+
+// ── Storage ────────────────────────────────────────────────────
+function getCashData() {
+  try { return JSON.parse(localStorage.getItem(CASH_KEY)) || { balance: 0, transactions: [] }; }
+  catch { return { balance: 0, transactions: [] }; }
+}
+function saveCashData(d) { localStorage.setItem(CASH_KEY, JSON.stringify(d)); }
+
+// ── Format TZS ─────────────────────────────────────────────────
+function fmtTZS(n) {
+  return 'TZS ' + Math.abs(Math.round(n)).toLocaleString('en-US');
+}
+
+// ── Recalculate running balances after a delete ─────────────────
+function recalcCash(data) {
+  const oldest = [...data.transactions].reverse(); // oldest first
+  let running = 0;
+  oldest.forEach(tx => {
+    running = tx.type === 'credit' ? running + tx.amount : running - tx.amount;
+    tx.balanceAfter = running;
+  });
+  data.balance = running;
+  data.transactions = oldest.reverse(); // back to newest first
+}
+
+// ── Add transaction ─────────────────────────────────────────────
+function addCashTx(amount, type, cat, note) {
+  const data = getCashData();
+  const newBal = type === 'credit' ? data.balance + amount : data.balance - amount;
+  data.transactions.unshift({
+    id: 'tx' + Date.now(),
+    type, amount, category: cat,
+    note: note.trim(),
+    date: new Date().toISOString(),
+    balanceAfter: newBal,
+  });
+  data.balance = newBal;
+  saveCashData(data);
+  renderCash();
+}
+
+// ── Delete transaction ──────────────────────────────────────────
+function deleteCashTx(id) {
+  const data = getCashData();
+  const idx = data.transactions.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  data.transactions.splice(idx, 1);
+  recalcCash(data);
+  saveCashData(data);
+  renderCash();
+}
+
+// ── Render ──────────────────────────────────────────────────────
+function renderCash() {
+  const data = getCashData();
+
+  // Balance display
+  const balEl = document.getElementById('cash-balance');
+  if (balEl) {
+    balEl.textContent = fmtTZS(data.balance);
+    balEl.className = 'cash-bal-amount' + (data.balance < 0 ? ' negative' : '');
+  }
+
+  // Today's totals
+  const todayStr = new Date().toDateString();
+  let todayIn = 0, todayOut = 0;
+  data.transactions.forEach(tx => {
+    if (new Date(tx.date).toDateString() === todayStr) {
+      if (tx.type === 'credit') todayIn  += tx.amount;
+      else                       todayOut += tx.amount;
+    }
+  });
+  const inEl  = document.getElementById('cash-today-in');
+  const outEl = document.getElementById('cash-today-out');
+  if (inEl)  inEl.textContent  = fmtTZS(todayIn);
+  if (outEl) outEl.textContent = fmtTZS(todayOut);
+
+  // Transaction log
+  const logEl = document.getElementById('cash-log');
+  if (!logEl) return;
+
+  if (data.transactions.length === 0) {
+    logEl.innerHTML = '<div class="loading">NO ENTRIES YET — ADD A TOP UP TO SET YOUR OPENING BALANCE</div>';
+    return;
+  }
+
+  const yesterdayStr = new Date(Date.now() - 86400000).toDateString();
+
+  logEl.innerHTML = data.transactions.map(tx => {
+    const d       = new Date(tx.date);
+    const dStr    = d.toDateString();
+    const timeStr = d.toTimeString().slice(0, 5);
+    const dateLbl = dStr === todayStr     ? 'TODAY' :
+                    dStr === yesterdayStr ? 'YESTERDAY' :
+                    d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase();
+    const catObj  = CASH_CATS.find(c => c.id === tx.category);
+    const catLbl  = catObj ? catObj.label : tx.category.toUpperCase();
+    const display = tx.note || catLbl;
+    const sign    = tx.type === 'debit' ? '−' : '+';
+
+    return `
+      <div class="cash-tx">
+        <div class="cash-tx-cat c-${tx.category}">${catLbl}</div>
+        <div class="cash-tx-body">
+          <div class="cash-tx-note">${esc(display)}</div>
+          <div class="cash-tx-time">${dateLbl} · ${timeStr}</div>
+        </div>
+        <div class="cash-tx-right">
+          <div class="cash-tx-amount ${tx.type}">${sign}${fmtTZS(tx.amount)}</div>
+          <div class="cash-tx-balance">→ ${fmtTZS(tx.balanceAfter)}</div>
+        </div>
+        <div class="cash-tx-del" onclick="deleteCashTx('${tx.id}')" title="Remove">×</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Export CSV ──────────────────────────────────────────────────
+function exportCashCSV() {
+  const data = getCashData();
+  if (!data.transactions.length) { showCmdResponse('NO DATA TO EXPORT', true); return; }
+
+  const rows = [['Date', 'Time', 'Type', 'Category', 'Note', 'Amount (TZS)', 'Balance After (TZS)']];
+  [...data.transactions].reverse().forEach(tx => {
+    const d = new Date(tx.date);
+    rows.push([
+      d.toLocaleDateString('en-GB'),
+      d.toTimeString().slice(0, 5),
+      tx.type.toUpperCase(),
+      tx.category.toUpperCase(),
+      tx.note || '',
+      tx.type === 'debit' ? -tx.amount : tx.amount,
+      tx.balanceAfter,
+    ]);
+  });
+
+  const csv  = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `jarvis-cash-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Form submit ─────────────────────────────────────────────────
+function submitCashTx() {
+  const amtEl  = document.getElementById('cash-amount-input');
+  const noteEl = document.getElementById('cash-note-input');
+  const amt    = parseFloat(amtEl?.value);
+  if (!amt || amt <= 0) { amtEl?.focus(); return; }
+  addCashTx(amt, cashTxType, cashTxCat, noteEl?.value || '');
+  if (amtEl)  amtEl.value  = '';
+  if (noteEl) noteEl.value = '';
+  amtEl?.focus();
+}
+
+// ── Event bindings ──────────────────────────────────────────────
+document.querySelectorAll('.cash-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    cashTxType = btn.dataset.type;
+    document.querySelectorAll('.cash-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.cash-cat-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    cashTxCat = chip.dataset.cat;
+    document.querySelectorAll('.cash-cat-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+document.getElementById('cash-add-btn')?.addEventListener('click', submitCashTx);
+document.getElementById('cash-amount-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitCashTx();
+});
+document.getElementById('cash-note-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitCashTx();
+});
+document.getElementById('cash-export-btn')?.addEventListener('click', exportCashCSV);
+
+// ── Init (called by navigate) ───────────────────────────────────
+function initCash() { renderCash(); }
 
 
 // ══════════════════════════════════════════════════════════════
