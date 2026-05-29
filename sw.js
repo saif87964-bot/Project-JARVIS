@@ -1,4 +1,4 @@
-const CACHE = 'jarvis-v10';
+const CACHE = 'jarvis-v11';
 const SHELL = [
   '/',
   '/index.html',
@@ -8,6 +8,10 @@ const SHELL = [
   '/icon.svg',
   '/offline.html',
 ];
+
+// These files change on every deploy — always fetch fresh from network.
+// Cache is kept as offline fallback only.
+const NETWORK_FIRST = new Set(['/', '/index.html', '/style.css', '/app.js']);
 
 // Install: pre-cache the app shell
 self.addEventListener('install', e => {
@@ -50,7 +54,23 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // App shell assets — cache-first, fallback to network
+  // CSS / JS / HTML — network-first so deploys are visible immediately.
+  // Falls back to cache when offline.
+  if (NETWORK_FIRST.has(url.pathname)) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          // Update cache in background so offline still works
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Everything else (icons, manifest) — cache-first, fallback to network
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request))
   );
