@@ -44,7 +44,7 @@ export async function loadDashboardNews() {
 
     // 1. Netlify Function (server-side — no CORS, no rate-limit)
     try {
-      const r = await fetchWithTimeout(`/.netlify/functions/news?feed=${key}`, 7000);
+      const r = await fetchWithTimeout(`/api/news?feed=${key}`, 7000);
       if (r.ok) {
         const d = await r.json();
         if (d.items?.length) {
@@ -91,7 +91,7 @@ export async function loadFullNews() {
 
     // 1. Netlify Function
     try {
-      const r = await fetchWithTimeout(`/.netlify/functions/news?feed=${key}`, 8000);
+      const r = await fetchWithTimeout(`/api/news?feed=${key}`, 8000);
       if (r.ok) {
         const d = await r.json();
         if (d.items?.length) { newsCache[key] = d.items; return; }
@@ -171,7 +171,7 @@ function openArticleModal(url, headline, meta, rssDesc) {
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  fetchWithTimeout(`/.netlify/functions/summarize?url=${encodeURIComponent(url)}`, 18000)
+  fetchWithTimeout(`/api/summarize?url=${encodeURIComponent(url)}`, 18000)
     .then(r => r.json())
     .then(data => {
       if (data.summary) {
