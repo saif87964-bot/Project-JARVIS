@@ -934,12 +934,33 @@ body::after {
   .news-headline { font-size: 13px; }
   .email-subject { font-size: 11px; }
 
-  /* Cash module mobile tweaks */
-  .cash-bal-amount { font-size: 30px; }
-  .cash-type-btn   { font-size: 9px; padding: 3px 7px; letter-spacing: 0; }
-  .cash-amount-field { max-width: 110px; }
+  /* ── Cash view — mobile redesign ───────────────────────────── */
+  .cash-bal-amount { font-size: 28px; }
 
-  /* Cash form: note input drops to its own line */
-  #cash-note-input { order: 3; flex: 1 1 100%; margin-top: 0; }
-  #view-cash .task-add-form { flex-wrap: wrap; row-gap: 6px; }
+  /* Type toggle: wrap below title, fill full width */
+  #view-cash .card-header { flex-wrap: wrap; row-gap: 6px; }
+  .cash-type-toggle { width: 100%; gap: 6px; }
+  .cash-type-btn { flex: 1; text-align: center; padding: 7px 4px; font-size: 10px; letter-spacing: 0; }
+
+  /* Category chips: wrap to multiple rows */
+  .cash-cats { flex-wrap: wrap; }
+  .cash-cat-chip { padding: 5px 10px; }
+
+  /* Form: stack vertically, make inputs visible */
+  #view-cash .task-add-form { flex-direction: column; gap: 10px; padding: 12px 14px 14px; }
+  #view-cash .task-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.3);
+    font-size: 15px;
+  }
+  #view-cash .cash-amount-field { max-width: none; }
+  #view-cash #cash-add-btn { width: 100%; padding: 11px 14px; font-size: 12px; letter-spacing: 0.15em; }
+
+  /* Transaction rows: tighten up on small screens */
+  .cash-tx { gap: 8px; padding: 10px 12px; }
+  .cash-tx-note { font-size: 12px; }
+  .cash-tx-amount { font-size: 13px; }
 }
