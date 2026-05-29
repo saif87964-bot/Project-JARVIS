@@ -601,7 +601,7 @@ function renderCash() {
   if (!logEl) return;
 
   if (data.transactions.length === 0) {
-    logEl.innerHTML = '<div class="loading">NO ENTRIES YET — ADD A TOP UP TO SET YOUR OPENING BALANCE</div>';
+    logEl.innerHTML = '<div class="loading">NO ENTRIES YET</div>';
     return;
   }
 
