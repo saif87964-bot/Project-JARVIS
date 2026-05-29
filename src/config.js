@@ -27,6 +27,36 @@ export const FALLBACK_NEWS = [
   { tag: 'biz',  h: 'East Africa manufacturing sector reports 8.2% growth in Q1 2026', t: 'Reuters Africa'   },
 ];
 
+// ── Tanzania tax constants (TRA 2024/25) ──────────────────────
+export const TZ_TAX = {
+  VAT_RATE:      0.18,   // 18% standard rate
+  NSSF_EMPLOYEE: 0.10,   // 10% employee contribution
+  NSSF_EMPLOYER: 0.10,   // 10% employer contribution
+  SDL_RATE:      0.045,  // 4.5% Skills Development Levy (employer)
+  WCF_RATE:      0.005,  // 0.5% Workers Compensation Fund (employer)
+  // Monthly PAYE brackets — marginal rates
+  PAYE_BRACKETS: [
+    { min: 0,        max: 270000,   rate: 0,    base: 0      },
+    { min: 270000,   max: 520000,   rate: 0.09, base: 0      },
+    { min: 520000,   max: 760000,   rate: 0.20, base: 22500  },
+    { min: 760000,   max: 1000000,  rate: 0.25, base: 70500  },
+    { min: 1000000,  max: Infinity, rate: 0.30, base: 130500 },
+  ],
+};
+
+// Currencies shown in live rates + converter
+export const CURRENCIES = ['USD', 'TZS', 'EUR', 'GBP', 'KES', 'AED', 'ZAR'];
+
+// Live rate display pairs (all → TZS)
+export const RATE_PAIRS = [
+  { from: 'USD', label: 'USD / TZS' },
+  { from: 'EUR', label: 'EUR / TZS' },
+  { from: 'GBP', label: 'GBP / TZS' },
+  { from: 'KES', label: 'KES / TZS' },
+  { from: 'AED', label: 'AED / TZS' },
+  { from: 'ZAR', label: 'ZAR / TZS' },
+];
+
 export const CASH_CATS = [
   { id: 'food',      label: 'FOOD'      },
   { id: 'transport', label: 'TRANSPORT' },

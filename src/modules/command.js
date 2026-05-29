@@ -9,9 +9,10 @@ import { bus }          from '../core/bus.js';
 import { addTask }      from './tasks.js';
 import { addEvent }     from './calendar.js';
 import { loadWeather }  from './weather.js';
-import { toDateStr }    from '../utils.js';
+import { toDateStr, fmtTZS } from '../utils.js';
+import { TZ_TAX }            from '../config.js';
 
-const HELP_TEXT = 'go · task [text] at [time] · event [text] at [time] · weather · clear · help';
+const HELP_TEXT = 'go · task [text] at [time] · event [text] at [time] · weather · brief · vat [amount] · clear · help';
 
 const CMDS = [
   // ── Navigation ────────────────────────────────────────────────
@@ -25,6 +26,8 @@ const CMDS = [
     run: ()  => { navigate('news');      return '→ NEWS FEED';  } },
   { re: /^(go\s+)?(inbox|mail|email)$/i,
     run: ()  => { navigate('inbox');     return '→ INBOX';      } },
+  { re: /^(go\s+)?(tools?|calc(ulator)?|currency|vat)$/i,
+    run: ()  => { navigate('tools');     return '→ TOOLS';      } },
 
   // ── Task: "task Buy milk" / "task Buy milk at 14:00" ──────────
   { re: /^(?:add\s+)?task\s+(.+?)(?:\s+at\s+(\d{1,2}:\d{2}))?$/i,
@@ -45,6 +48,21 @@ const CMDS = [
   // ── Weather ────────────────────────────────────────────────────
   { re: /^weather$/i,
     run: ()  => { loadWeather(); return '↺ REFRESHING WEATHER...'; } },
+
+  // ── Daily Briefing ─────────────────────────────────────────────
+  { re: /^brief(ing)?$/i,
+    run: ()  => { bus.emit('briefing:open'); return '▸ OPENING BRIEFING...'; } },
+
+  // ── Quick VAT calc: "vat 50000" ────────────────────────────────
+  { re: /^vat\s+([\d,]+)$/i,
+    run: m  => {
+      const amount = parseFloat(m[1].replace(/,/g, ''));
+      if (!amount) return '? INVALID AMOUNT';
+      const vat   = amount * TZ_TAX.VAT_RATE;
+      const total = amount + vat;
+      return `NET ${fmtTZS(amount)}  →  VAT ${fmtTZS(vat)}  →  TOTAL ${fmtTZS(total)}`;
+    }
+  },
 
   // ── Clear ──────────────────────────────────────────────────────
   { re: /^clear$/i,

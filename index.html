@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v13';
+  var K='jv_bust_v14';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -73,6 +73,7 @@
       SYSTEM ACTIVE &nbsp;|&nbsp; <span id="live-time">--:--:--</span> &nbsp;|&nbsp; DAR ES SALAAM, TZ
     </div>
     <div class="topbar-right">
+      <button class="theme-toggle" id="theme-toggle">◑ DARK</button>
       <span class="status-pill status-ok">GMAIL ● ONLINE</span>
       <span class="status-pill status-ok">NEWS ● LIVE</span>
       <span class="status-pill status-warn">CALENDAR ● SYNC</span>
@@ -90,6 +91,7 @@
       <div class="nav-item" data-view="news"><span class="nav-icon">▦</span> News Feed</div>
       <div class="nav-item" data-view="calendar"><span class="nav-icon">◷</span> Calendar</div>
       <div class="nav-item" data-view="cash"><span class="nav-icon">◉</span> Cash</div>
+      <div class="nav-item" data-view="tools"><span class="nav-icon">⊞</span> Tools</div>
       <div class="nav-item" data-view="reminders"><span class="nav-icon">◈</span> Tasks</div>
 
       <div class="nav-section-label" style="margin-top:8px">BUSINESSES</div>
@@ -319,6 +321,95 @@
 
       </div><!-- /view-cash -->
 
+      <!-- ▸ TOOLS ──────────────────────────────────────────────── -->
+      <div id="view-tools" class="view">
+
+        <!-- Tab bar -->
+        <div class="tools-tab-bar">
+          <button class="tools-tab active" data-tab="currency">CURRENCY</button>
+          <button class="tools-tab" data-tab="vat">VAT</button>
+          <button class="tools-tab" data-tab="salary">SALARY</button>
+        </div>
+
+        <!-- ▸ Currency panel -->
+        <div class="tools-panel active" id="tools-currency">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">LIVE RATES — TO TZS</div>
+              <div class="card-action" id="currency-refresh">↺ REFRESH</div>
+            </div>
+            <div id="currency-rates"><div class="loading">FETCHING RATES...</div></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">CURRENCY CONVERTER</div>
+            </div>
+            <div class="conv-form">
+              <input id="conv-amount" class="task-input conv-input" type="number"
+                     placeholder="Amount" min="0" step="any" autocomplete="off" />
+              <div class="conv-selects">
+                <select id="conv-from" class="conv-select">
+                  <option value="USD">USD</option>
+                  <option value="TZS">TZS</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="KES">KES</option>
+                  <option value="AED">AED</option>
+                  <option value="ZAR">ZAR</option>
+                </select>
+                <span class="conv-arrow">→</span>
+                <select id="conv-to" class="conv-select">
+                  <option value="TZS" selected>TZS</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="KES">KES</option>
+                  <option value="AED">AED</option>
+                  <option value="ZAR">ZAR</option>
+                </select>
+              </div>
+              <div class="conv-result-row">
+                <span class="conv-result-label">RESULT</span>
+                <span class="conv-result" id="conv-result">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ VAT panel -->
+        <div class="tools-panel" id="tools-vat">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">VAT CALCULATOR — 18% TRA</div>
+              <div class="vat-mode-btns">
+                <button class="vat-mode-btn active" data-mode="exclusive">EXCL. VAT</button>
+                <button class="vat-mode-btn" data-mode="inclusive">INCL. VAT</button>
+              </div>
+            </div>
+            <div class="calc-form">
+              <input id="vat-amount" class="task-input calc-input" type="number"
+                     placeholder="Enter amount (TZS)" min="0" step="any" autocomplete="off" />
+            </div>
+            <div id="vat-result"><div class="loading">ENTER AN AMOUNT ABOVE</div></div>
+          </div>
+        </div>
+
+        <!-- ▸ Salary panel -->
+        <div class="tools-panel" id="tools-salary">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">SALARY CALCULATOR — TRA 2024/25</div>
+            </div>
+            <div class="calc-form">
+              <input id="salary-gross" class="task-input calc-input" type="number"
+                     placeholder="Gross monthly salary (TZS)" min="0" step="any" autocomplete="off" />
+            </div>
+            <div id="salary-result"><div class="loading">ENTER GROSS SALARY ABOVE</div></div>
+          </div>
+        </div>
+
+      </div><!-- /view-tools -->
+
       <!-- ▸ SETTINGS (stub) ──────────────────────────────────── -->
       <div id="view-settings" class="view">
         <div class="card">
@@ -438,7 +529,27 @@
       <span class="bnav-icon">◉</span>
       <span class="bnav-label">CASH</span>
     </div>
+    <div class="bnav-item" data-view="tools">
+      <span class="bnav-icon">⊞</span>
+      <span class="bnav-label">TOOLS</span>
+    </div>
   </nav>
+
+  <!-- ── Daily Briefing Modal ─────────────────────────────────────── -->
+  <div class="briefing-overlay" id="briefing-overlay">
+    <div class="briefing-modal">
+      <div class="briefing-header">
+        <span class="briefing-badge">◈ DAILY BRIEFING</span>
+        <button class="briefing-close" id="briefing-close">×</button>
+      </div>
+      <div class="briefing-body" id="briefing-body">
+        <div class="loading">LOADING BRIEFING...</div>
+      </div>
+      <div class="briefing-footer">
+        <button class="briefing-dismiss" id="briefing-close-btn">DISMISS</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ── Article Summary Modal ──────────────────────────────────── -->
   <div class="article-modal-overlay" id="article-modal-overlay" role="dialog" aria-modal="true">

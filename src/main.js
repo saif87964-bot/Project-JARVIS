@@ -14,6 +14,9 @@ import { setupCash, initCash }      from './modules/cash.js';
 import { initNews, loadFullNews }   from './modules/news.js';
 import { initWeather }              from './modules/weather.js';
 import { initCommandBar }           from './modules/command.js';
+import { setupTools, onEnterTools } from './modules/tools.js';
+import { initTheme }                from './modules/theme.js';
+import { initBriefing }             from './modules/briefing.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
@@ -22,16 +25,20 @@ bus.on('route:changed', ({ viewId }) => {
   if (viewId === 'news')      loadFullNews();
   if (viewId === 'calendar')  initCalendar();
   if (viewId === 'cash')      initCash();
+  if (viewId === 'tools')     onEnterTools();
 });
 
 // ── Boot sequence ─────────────────────────────────────────────
 // Type="module" scripts are deferred — DOM is always ready here.
+initTheme();        // apply saved theme before first paint
 initClock();        // live clock & greeting
 initTasks();        // seed, render dashboard tasks, badges, wire form + delegation
 setupCalendar();    // seed, wire form + month nav + delete delegation
 setupCash();        // wire type/cat buttons + form + delete delegation
+setupTools();       // wire tools tab buttons, converter inputs, VAT/salary inputs
 initNews();         // wire tabs, modal, delegation; kick off dashboard fetch
 initWeather();      // fire-and-forget weather fetch
 initCommandBar();   // wire input, keyboard shortcut, bus subscription
+initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt
 initRouter();       // LAST — wires nav delegation + restores hash (fires route hooks)
