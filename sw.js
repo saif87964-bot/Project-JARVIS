@@ -1,4 +1,4 @@
-const CACHE = 'jarvis-v12';
+const CACHE = 'jarvis-v13';
 const SHELL = [
   '/',
   '/index.html',
@@ -9,8 +9,6 @@ const SHELL = [
   '/offline.html',
 ];
 
-// These files change on every deploy — always fetch fresh from network.
-// Cache is kept as offline fallback only.
 const NETWORK_FIRST = new Set(['/', '/index.html', '/style.css', '/app.js', '/style.css?v=12', '/app.js?v=11']);
 
 // Install: pre-cache the app shell
@@ -21,12 +19,16 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate: purge old caches
+// Activate: purge old caches, then FORCE all open windows to reload.
+// sw.js is always fetched fresh by the browser on every page open, so
+// this activate handler runs on every deploy — no manual cache clearing needed.
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
+      .catch(() => {}) // navigate() can throw if window already unloading — safe to ignore
   );
   self.clients.claim();
 });
@@ -54,13 +56,12 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // CSS / JS / HTML — network-first so deploys are visible immediately.
+  // CSS / JS — network-first so deploys are visible immediately.
   // Falls back to cache when offline.
   if (NETWORK_FIRST.has(url.pathname)) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
-          // Update cache in background so offline still works
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
           return res;
