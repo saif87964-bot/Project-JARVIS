@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v12';
+  var K='jv_bust_v13';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -144,7 +144,7 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">NEWS FEED</div>
-            <div class="card-action" onclick="loadNews()">REFRESH</div>
+            <div class="card-action" id="dashboard-news-refresh">REFRESH</div>
           </div>
           <div id="news-feed"><div class="loading">FETCHING FEED...</div></div>
         </div>
@@ -464,6 +464,6 @@
 
 </div><!-- /app -->
 
-<script src="app.js?v=11"></script>
+<script type="module" src="src/main.js"></script>
 </body>
 </html>

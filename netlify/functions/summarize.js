@@ -7,57 +7,29 @@
 // Usage:  /.netlify/functions/summarize?url=<encoded_article_url>
 // Returns: { summary: "...", error?: "..." }
 //
-// Requires:  ANTHROPIC_API_KEY environment variable set in Netlify.
+// Requires: ANTHROPIC_API_KEY environment variable set in Netlify.
 // If missing: returns { summary: null, error: "api_key_missing" }
 //   → client falls back to RSS description snippet.
 // ────────────────────────────────────────────────────────────────
 
 const https   = require('https');
-const http    = require('http');
-const { URL } = require('url');
+const httpGet = require('./shared/httpGet');
 
-// ── HTTP GET with redirect following ─────────────────────────────
-function httpGet(rawUrl, hops) {
-  hops = (hops | 0);
-  if (hops > 5) return Promise.reject(new Error('Too many redirects'));
-  return new Promise(function (resolve, reject) {
-    var parsed;
-    try { parsed = new URL(rawUrl); } catch (e) { return reject(e); }
-    var mod = parsed.protocol === 'https:' ? https : http;
-    var req = mod.get(rawUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; JARVIS/1.0)',
-        'Accept':     'text/html,application/xhtml+xml,*/*',
-      },
-    }, function (res) {
-      if ([301, 302, 303, 307, 308].indexOf(res.statusCode) !== -1 && res.headers.location) {
-        res.resume();
-        return httpGet(res.headers.location, hops + 1).then(resolve, reject);
-      }
-      if (res.statusCode !== 200) {
-        res.resume();
-        return reject(new Error('HTTP ' + res.statusCode));
-      }
-      var parts = [];
-      res.on('data',  function (c) { parts.push(c); });
-      res.on('end',   function ()  { resolve(Buffer.concat(parts).toString('utf8')); });
-      res.on('error', reject);
-    });
-    req.setTimeout(5000, function () { req.destroy(new Error('Article fetch timeout')); });
-    req.on('error', reject);
-  });
-}
+const ARTICLE_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (compatible; JARVIS/1.0)',
+  'Accept':     'text/html,application/xhtml+xml,*/*',
+};
 
 // ── Strip HTML → plain text ───────────────────────────────────────
 function stripHtml(html) {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#039;/g, "'")
+    .replace(/<style[\s\S]*?<\/style>/gi,   '')
+    .replace(/<!--[\s\S]*?-->/g,            '')
+    .replace(/<[^>]+>/g,  ' ')
+    .replace(/&nbsp;/g,   ' ').replace(/&amp;/g,   '&')
+    .replace(/&lt;/g,     '<').replace(/&gt;/g,    '>')
+    .replace(/&quot;/g,   '"').replace(/&#039;/g,  "'")
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -74,9 +46,9 @@ function callClaude(articleText) {
     articleText.slice(0, 4000);
 
   var payload = JSON.stringify({
-    model: 'claude-haiku-4-5',   // fast + cheap — update if needed
+    model:      'claude-haiku-4-5',
     max_tokens: 280,
-    messages: [{ role: 'user', content: prompt }],
+    messages:   [{ role: 'user', content: prompt }],
   });
 
   return new Promise(function (resolve, reject) {
@@ -96,8 +68,8 @@ function callClaude(articleText) {
       res.on('end',   function () {
         try {
           var d = JSON.parse(data);
-          if (d.error) return reject(new Error(d.error.message || 'Claude API error'));
-          if (d.content && d.content[0]) return resolve(d.content[0].text);
+          if (d.error)              return reject(new Error(d.error.message || 'Claude API error'));
+          if (d.content?.[0]?.text) return resolve(d.content[0].text);
           reject(new Error('Unexpected Claude response'));
         } catch (e) { reject(e); }
       });
@@ -123,7 +95,7 @@ exports.handler = async function (event) {
     };
   }
 
-  // No API key → tell the client so it can show the RSS snippet instead
+  // No API key → tell the client so it shows the RSS snippet instead
   if (!process.env.ANTHROPIC_API_KEY) {
     return {
       statusCode: 200,
@@ -136,7 +108,7 @@ exports.handler = async function (event) {
   }
 
   try {
-    var html    = await httpGet(url);
+    var html    = await httpGet(url, { headers: ARTICLE_HEADERS, timeout: 5000 });
     var text    = stripHtml(html);
     var summary = await callClaude(text);
 

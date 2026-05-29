@@ -1,15 +1,38 @@
-const CACHE = 'jarvis-v13';
+const CACHE = 'jarvis-v14';
+
 const SHELL = [
   '/',
   '/index.html',
   '/style.css?v=12',
-  '/app.js?v=11',
+  '/src/main.js',
+  '/src/config.js',
+  '/src/utils.js',
+  '/src/core/router.js',
+  '/src/core/storage.js',
+  '/src/core/bus.js',
+  '/src/core/pwa.js',
+  '/src/modules/clock.js',
+  '/src/modules/tasks.js',
+  '/src/modules/calendar.js',
+  '/src/modules/cash.js',
+  '/src/modules/news.js',
+  '/src/modules/weather.js',
+  '/src/modules/command.js',
   '/manifest.json',
   '/icon.svg',
   '/offline.html',
 ];
 
-const NETWORK_FIRST = new Set(['/', '/index.html', '/style.css', '/app.js', '/style.css?v=12', '/app.js?v=11']);
+// All JS modules and CSS use network-first so deploys are immediately visible.
+const NETWORK_FIRST = new Set([
+  '/', '/index.html',
+  '/style.css', '/style.css?v=12',
+  '/src/main.js', '/src/config.js', '/src/utils.js',
+  '/src/core/router.js', '/src/core/storage.js', '/src/core/bus.js', '/src/core/pwa.js',
+  '/src/modules/clock.js', '/src/modules/tasks.js', '/src/modules/calendar.js',
+  '/src/modules/cash.js', '/src/modules/news.js', '/src/modules/weather.js',
+  '/src/modules/command.js',
+]);
 
 // Install: pre-cache the app shell
 self.addEventListener('install', e => {
@@ -28,7 +51,7 @@ self.addEventListener('activate', e => {
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
       .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
-      .catch(() => {}) // navigate() can throw if window already unloading — safe to ignore
+      .catch(() => {}) // navigate() can throw if window is already unloading — safe to ignore
   );
   self.clients.claim();
 });
@@ -56,7 +79,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // CSS / JS — network-first so deploys are visible immediately.
+  // JS modules + CSS — network-first so deploys are visible immediately.
   // Falls back to cache when offline.
   if (NETWORK_FIRST.has(url.pathname)) {
     e.respondWith(
