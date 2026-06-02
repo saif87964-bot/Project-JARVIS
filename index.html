@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v14';
+  var K='jv_bust_v15';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -213,6 +213,11 @@
       <!-- ▸ CALENDAR ────────────────────────────────────────── -->
       <div id="view-calendar" class="view">
 
+        <!-- Google Calendar connection -->
+        <div class="card gcal-card">
+          <div id="gcal-status"><div class="loading">INITIALISING...</div></div>
+        </div>
+
         <!-- Month grid -->
         <div class="card">
           <div class="card-header">
@@ -316,6 +321,26 @@
           </div>
           <div id="cash-log">
             <div class="loading">NO ENTRIES YET</div>
+          </div>
+        </div>
+
+        <!-- 30-day spending chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">SPENDING — LAST 30 DAYS</div>
+          </div>
+          <div id="chart-daily" class="chart-daily-container">
+            <div class="loading">LOADING CHART...</div>
+          </div>
+        </div>
+
+        <!-- Category breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">BREAKDOWN BY CATEGORY</div>
+          </div>
+          <div id="chart-categories" class="chart-cats-container">
+            <div class="loading">LOADING...</div>
           </div>
         </div>
 

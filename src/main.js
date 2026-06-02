@@ -14,17 +14,19 @@ import { setupCash, initCash }      from './modules/cash.js';
 import { initNews, loadFullNews }   from './modules/news.js';
 import { initWeather }              from './modules/weather.js';
 import { initCommandBar }           from './modules/command.js';
-import { setupTools, onEnterTools } from './modules/tools.js';
-import { initTheme }                from './modules/theme.js';
-import { initBriefing }             from './modules/briefing.js';
+import { setupTools, onEnterTools }   from './modules/tools.js';
+import { initTheme }                  from './modules/theme.js';
+import { initBriefing }               from './modules/briefing.js';
+import { renderExpenseCharts }        from './modules/charts.js';
+import { setupGCal, renderGCalStatus } from './modules/gcal.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
 bus.on('route:changed', ({ viewId }) => {
   if (viewId === 'reminders') renderTasks();
   if (viewId === 'news')      loadFullNews();
-  if (viewId === 'calendar')  initCalendar();
-  if (viewId === 'cash')      initCash();
+  if (viewId === 'calendar')  { initCalendar(); renderGCalStatus(); }
+  if (viewId === 'cash')      { initCash(); renderExpenseCharts(); }
   if (viewId === 'tools')     onEnterTools();
 });
 
@@ -39,6 +41,7 @@ setupTools();       // wire tools tab buttons, converter inputs, VAT/salary inpu
 initNews();         // wire tabs, modal, delegation; kick off dashboard fetch
 initWeather();      // fire-and-forget weather fetch
 initCommandBar();   // wire input, keyboard shortcut, bus subscription
+setupGCal();        // load GIS script, wire OAuth delegation
 initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt
 initRouter();       // LAST — wires nav delegation + restores hash (fires route hooks)

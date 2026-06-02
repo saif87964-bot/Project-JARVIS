@@ -6,9 +6,11 @@
 //   addEvent(title, time, dateStr) — used by command.js
 //   updateMeetingsStat() — updates greeting-card meeting count
 
-import { STORAGE_KEYS, DAYS, MONTHS } from '../config.js';
-import { storage }                     from '../core/storage.js';
-import { esc, toDateStr }              from '../utils.js';
+import { STORAGE_KEYS, DAYS, MONTHS }                         from '../config.js';
+import { storage }                                            from '../core/storage.js';
+import { bus }                                                from '../core/bus.js';
+import { esc, toDateStr }                                     from '../utils.js';
+import { getGCalEventsForDate, getAllGCalEvents, loadGCalMonth } from './gcal.js';
 
 let calYear      = new Date().getFullYear();
 let calMonth     = new Date().getMonth(); // 0-indexed
@@ -24,6 +26,10 @@ function saveEvents(evs) {
 }
 function getEventsForDate(dateStr) {
   return getEvents().filter(e => e.date === dateStr);
+}
+// Merges local + Google Calendar events for a date
+function getAllEventsForDate(dateStr) {
+  return [...getEventsForDate(dateStr), ...getGCalEventsForDate(dateStr)];
 }
 
 // ── Seed sample events on first run ───────────────────────────
@@ -91,7 +97,7 @@ function buildCalendar() {
 
   for (let d = 1; d <= daysTotal; d++) {
     const dateStr  = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const evCount  = getEventsForDate(dateStr).length;
+    const evCount  = getAllEventsForDate(dateStr).length;
     const isToday    = isCurMon && d === today.getDate();
     const isSelected = dateStr === selectedDate;
     const cls  = ['cal-day', isToday ? 'cal-today' : '', isSelected ? 'cal-selected' : ''].filter(Boolean).join(' ');
@@ -141,7 +147,7 @@ function renderDayEvents() {
     return;
   }
 
-  const evs = getEventsForDate(selectedDate)
+  const evs = getAllEventsForDate(selectedDate)
     .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
   if (evs.length === 0) {
@@ -151,11 +157,15 @@ function renderDayEvents() {
 
   container.innerHTML = evs.map(e => `
     <div class="cal-event-item">
+      ${e.source === 'google' ? '<span class="gcal-badge">G</span>' : ''}
       ${e.time ? `<div class="cal-event-time-badge">${esc(e.time)}</div>` : ''}
       <div class="cal-event-body">
         <div class="cal-event-title">${esc(e.title)}</div>
       </div>
-      <div class="cal-event-del" data-action="delete-event" data-id="${e.id}">×</div>
+      ${e.source !== 'google'
+        ? `<div class="cal-event-del" data-action="delete-event" data-id="${e.id}">×</div>`
+        : '<div class="cal-event-del" style="visibility:hidden">×</div>'
+      }
     </div>`).join('');
 }
 
@@ -167,11 +177,8 @@ function renderUpcoming() {
   const now     = new Date(); now.setHours(0, 0, 0, 0);
   const weekOut = new Date(now.getTime() + 7 * 86400000);
 
-  const evs = getEvents()
-    .filter(e => {
-      const d = new Date(e.date + 'T00:00:00');
-      return d >= now && d <= weekOut;
-    })
+  const _inRange = e => { const d = new Date(e.date + 'T00:00:00'); return d >= now && d <= weekOut; };
+  const evs = [...getEvents().filter(_inRange), ...getAllGCalEvents().filter(_inRange)]
     .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
 
   if (evs.length === 0) {
@@ -187,12 +194,16 @@ function renderUpcoming() {
                      `${DAYS[d.getDay()]} ${d.getDate()}`;
     return `
       <div class="cal-event-item">
+        ${e.source === 'google' ? '<span class="gcal-badge">G</span>' : ''}
         <div class="cal-event-date-badge">${badge}</div>
         ${e.time ? `<div class="cal-event-time-badge">${esc(e.time)}</div>` : ''}
         <div class="cal-event-body">
           <div class="cal-event-title">${esc(e.title)}</div>
         </div>
-        <div class="cal-event-del" data-action="delete-event" data-id="${e.id}">×</div>
+        ${e.source !== 'google'
+          ? `<div class="cal-event-del" data-action="delete-event" data-id="${e.id}">×</div>`
+          : '<div class="cal-event-del" style="visibility:hidden">×</div>'
+        }
       </div>`;
   }).join('');
 }
@@ -234,12 +245,19 @@ export function initCalendar() {
   buildCalendar();
   renderUpcoming();
   selectDay(toDateStr(new Date())); // auto-select today
+  loadGCalMonth(calYear, calMonth); // async — re-renders via bus when done
 }
 
 // ── setupCalendar — call once at app startup ──────────────────
 export function setupCalendar() {
   seedDefaultEvents();
   updateMeetingsStat();
+
+  // Re-render when Google Calendar events arrive or connection changes
+  bus.on('gcal:loaded',       () => { buildCalendar(); renderUpcoming(); if (selectedDate) renderDayEvents(); });
+  bus.on('gcal:connected',    () => loadGCalMonth(calYear, calMonth));
+  bus.on('gcal:disconnected', () => { buildCalendar(); renderUpcoming(); if (selectedDate) renderDayEvents(); });
+
 
   document.getElementById('cal-add-btn')?.addEventListener('click', () => {
     if (!selectedDate) return;

@@ -1,9 +1,9 @@
-const CACHE = 'jarvis-v16';
+const CACHE = 'jarvis-v17';
 
 const SHELL = [
   '/',
   '/index.html',
-  '/style.css?v=14',
+  '/style.css?v=15',
   '/src/main.js',
   '/src/config.js',
   '/src/utils.js',
@@ -21,6 +21,8 @@ const SHELL = [
   '/src/modules/tools.js',
   '/src/modules/theme.js',
   '/src/modules/briefing.js',
+  '/src/modules/charts.js',
+  '/src/modules/gcal.js',
   '/manifest.json',
   '/icon.png',
   '/offline.html',
@@ -29,13 +31,14 @@ const SHELL = [
 // All JS modules and CSS use network-first so deploys are immediately visible.
 const NETWORK_FIRST = new Set([
   '/', '/index.html',
-  '/style.css', '/style.css?v=14',
+  '/style.css', '/style.css?v=15',
   '/src/main.js', '/src/config.js', '/src/utils.js',
   '/src/core/router.js', '/src/core/storage.js', '/src/core/bus.js', '/src/core/pwa.js',
   '/src/modules/clock.js', '/src/modules/tasks.js', '/src/modules/calendar.js',
   '/src/modules/cash.js', '/src/modules/news.js', '/src/modules/weather.js',
   '/src/modules/command.js', '/src/modules/tools.js',
   '/src/modules/theme.js', '/src/modules/briefing.js',
+  '/src/modules/charts.js', '/src/modules/gcal.js',
 ]);
 
 // Install: pre-cache the app shell
