@@ -293,15 +293,13 @@
               <button class="cash-type-btn" data-type="credit">+ TOP UP</button>
             </div>
           </div>
-          <!-- Category chips -->
-          <div class="cash-cats">
-            <button class="cash-cat-chip" data-cat="food">FOOD</button>
-            <button class="cash-cat-chip" data-cat="transport">TRANSPORT</button>
-            <button class="cash-cat-chip" data-cat="fuel">FUEL</button>
-            <button class="cash-cat-chip" data-cat="business">BUSINESS</button>
-            <button class="cash-cat-chip" data-cat="shopping">SHOPPING</button>
-            <button class="cash-cat-chip" data-cat="utilities">UTILITIES</button>
-            <button class="cash-cat-chip active" data-cat="misc">MISC</button>
+          <!-- Category chips — rendered dynamically by cash.js -->
+          <div class="cash-cats" id="cash-cats"></div>
+          <!-- Add category row (hidden until ＋ NEW is clicked) -->
+          <div class="cash-cat-add-row" id="cash-cat-add-row">
+            <input id="cash-cat-input" class="task-input" placeholder="Category name..." maxlength="20" autocomplete="off" />
+            <button class="task-add-btn" id="cash-cat-save">ADD</button>
+            <button class="cash-cat-cancel-btn" id="cash-cat-cancel">CANCEL</button>
           </div>
           <!-- Amount + note + submit -->
           <div class="task-add-form">

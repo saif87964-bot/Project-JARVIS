@@ -283,9 +283,41 @@ body::after {
   padding: 3px 9px; border-radius: 2px;
   border: 1px solid var(--dim); background: none; color: var(--muted);
   cursor: pointer; transition: all 0.15s; user-select: none;
+  display: inline-flex; align-items: center; gap: 5px;
+  position: relative;
 }
 .cash-cat-chip:hover { color: var(--text); border-color: var(--muted); }
 .cash-cat-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.1); }
+
+/* × delete badge on each chip */
+.cat-chip-del {
+  font-size: 11px; line-height: 1; color: var(--muted);
+  opacity: 0; transition: opacity 0.15s;
+  pointer-events: none;
+}
+.cash-cat-chip:hover .cat-chip-del { opacity: 0.7; pointer-events: auto; }
+.cat-chip-del:hover { color: var(--accent2) !important; opacity: 1 !important; }
+
+/* ＋ NEW chip */
+.cat-chip-add {
+  border-style: dashed; color: var(--muted);
+  opacity: 0.7;
+}
+.cat-chip-add:hover { opacity: 1; color: var(--accent); border-color: var(--accent); }
+
+/* Add-category row */
+.cash-cat-add-row {
+  display: none; align-items: center; gap: 8px;
+  padding: 8px 14px 4px;
+}
+.cash-cat-add-row.open { display: flex; }
+.cash-cat-cancel-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; padding: 6px 10px; border-radius: 2px; cursor: pointer;
+  background: none; border: 1px solid var(--dim); color: var(--muted);
+  transition: all 0.15s; white-space: nowrap;
+}
+.cash-cat-cancel-btn:hover { color: var(--accent2); border-color: var(--accent2); }
 
 /* Amount field */
 .cash-amount-field { max-width: 150px; -moz-appearance: textfield; }
@@ -945,6 +977,10 @@ body::after {
   /* Category chips: wrap to multiple rows */
   .cash-cats { flex-wrap: wrap; }
   .cash-cat-chip { padding: 5px 10px; }
+  /* Always show × on mobile (no hover) */
+  .cat-chip-del { opacity: 0.5; pointer-events: auto; }
+  .cash-cat-add-row { flex-wrap: wrap; }
+  .cash-cat-add-row .task-input { flex: 1; min-width: 0; }
 
   /* Form: stack vertically, make inputs visible */
   #view-cash .task-add-form { flex-direction: column; gap: 10px; padding: 12px 14px 14px; }

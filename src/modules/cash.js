@@ -20,6 +20,71 @@ function saveCashData(d) {
   storage.set(STORAGE_KEYS.CASH, d);
 }
 
+// ── Categories (user-editable, stored in localStorage) ────────
+const CAT_KEY = 'jv_cash_cats';
+
+function getCategories() {
+  const saved = storage.get(CAT_KEY);
+  if (!saved) {
+    const defaults = CASH_CATS.map(c => ({ ...c }));
+    storage.set(CAT_KEY, defaults);
+    return defaults;
+  }
+  return saved;
+}
+function saveCategories(cats) {
+  storage.set(CAT_KEY, cats);
+}
+
+function addCategory(rawLabel) {
+  const label = rawLabel.trim().toUpperCase().slice(0, 20);
+  if (!label) return;
+  const id  = rawLabel.trim().toLowerCase()
+    .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || ('cat' + Date.now());
+  const cats = getCategories();
+  if (cats.find(c => c.id === id || c.label === label)) return; // no dupes
+  cats.push({ id, label });
+  saveCategories(cats);
+  renderCategoryChips();
+}
+
+function removeCategory(id) {
+  const cats = getCategories().filter(c => c.id !== id);
+  if (cats.length === 0) return; // always keep at least one
+  saveCategories(cats);
+  if (cashTxCat === id) cashTxCat = cats[0].id;
+  renderCategoryChips();
+}
+
+function renderCategoryChips() {
+  const container = document.getElementById('cash-cats');
+  if (!container) return;
+  const cats = getCategories();
+  // Ensure active cat is still valid
+  if (!cats.find(c => c.id === cashTxCat)) cashTxCat = cats[0]?.id || '';
+  container.innerHTML = cats.map(cat => `
+    <button class="cash-cat-chip${cashTxCat === cat.id ? ' active' : ''}" data-cat="${cat.id}">
+      ${esc(cat.label)}<span class="cat-chip-del" data-del-cat="${esc(cat.id)}">×</span>
+    </button>`).join('') +
+    '<button class="cash-cat-chip cat-chip-add" id="cat-add-toggle">＋ NEW</button>';
+}
+
+function _showCatAddRow() {
+  const row = document.getElementById('cash-cat-add-row');
+  if (row) { row.classList.add('open'); document.getElementById('cash-cat-input')?.focus(); }
+}
+function _hideCatAddRow() {
+  const row   = document.getElementById('cash-cat-add-row');
+  const input = document.getElementById('cash-cat-input');
+  if (row)   row.classList.remove('open');
+  if (input) input.value = '';
+}
+function _submitCatAdd() {
+  const val = document.getElementById('cash-cat-input')?.value?.trim();
+  if (val) addCategory(val);
+  _hideCatAddRow();
+}
+
 // ── Recalculate all running balances from oldest to newest ─────
 // Required after a delete, since balanceAfter values shift.
 function recalcCash(data) {
@@ -183,13 +248,35 @@ export function setupCash() {
     });
   });
 
-  // Category chips
-  document.querySelectorAll('.cash-cat-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
+  // Category chips — rendered dynamically; use delegation
+  renderCategoryChips();
+  document.addEventListener('click', e => {
+    // ×  delete a category
+    const del = e.target.closest('.cat-chip-del');
+    if (del && del.closest('#cash-cats')) {
+      e.stopPropagation();
+      removeCategory(del.dataset.delCat);
+      return;
+    }
+    // ＋ NEW — show add row
+    if (e.target.closest('#cat-add-toggle')) {
+      _showCatAddRow();
+      return;
+    }
+    // Save / cancel new category
+    if (e.target.id === 'cash-cat-save')   { _submitCatAdd(); return; }
+    if (e.target.id === 'cash-cat-cancel') { _hideCatAddRow(); return; }
+    // Select a chip
+    const chip = e.target.closest('.cash-cat-chip');
+    if (chip && chip.closest('#cash-cats') && chip.dataset.cat) {
       cashTxCat = chip.dataset.cat;
-      document.querySelectorAll('.cash-cat-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#cash-cats .cash-cat-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
-    });
+    }
+  });
+  document.getElementById('cash-cat-input')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  _submitCatAdd();
+    if (e.key === 'Escape') _hideCatAddRow();
   });
 
   // Form submit
