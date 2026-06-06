@@ -17,8 +17,9 @@ import { initCommandBar }           from './modules/command.js';
 import { setupTools, onEnterTools }   from './modules/tools.js';
 import { initTheme }                  from './modules/theme.js';
 import { initBriefing }               from './modules/briefing.js';
-import { renderExpenseCharts }        from './modules/charts.js';
+import { renderExpenseCharts }         from './modules/charts.js';
 import { setupGCal, renderGCalStatus } from './modules/gcal.js';
+import { initLock, setupLockSettings } from './modules/lock.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
@@ -33,6 +34,8 @@ bus.on('route:changed', ({ viewId }) => {
 // ── Boot sequence ─────────────────────────────────────────────
 // Type="module" scripts are deferred — DOM is always ready here.
 initTheme();        // apply saved theme before first paint
+initLock();         // show lock overlay immediately if enabled (must run early)
+setupLockSettings();// wire settings-page lock controls
 initClock();        // live clock & greeting
 initTasks();        // seed, render dashboard tasks, badges, wire form + delegation
 setupCalendar();    // seed, wire form + month nav + delete delegation

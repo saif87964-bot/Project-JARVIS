@@ -73,6 +73,7 @@
       SYSTEM ACTIVE &nbsp;|&nbsp; <span id="live-time">--:--:--</span> &nbsp;|&nbsp; DAR ES SALAAM, TZ
     </div>
     <div class="topbar-right">
+      <button class="lock-now-btn" id="lock-now-btn" style="display:none">⊠ LOCK</button>
       <button class="theme-toggle" id="theme-toggle">◑ DARK</button>
       <span class="status-pill status-ok">GMAIL ● ONLINE</span>
       <span class="status-pill status-ok">NEWS ● LIVE</span>
@@ -102,8 +103,7 @@
       <div class="nav-item"><span class="nav-icon">◆</span> IMH Associates</div>
 
       <div class="nav-section-label" style="margin-top:8px">SETTINGS</div>
-      <div class="nav-item" data-view="settings"><span class="nav-icon">⚙</span> Integrations</div>
-      <div class="nav-item"><span class="nav-icon">◑</span> Preferences</div>
+      <div class="nav-item" data-view="settings"><span class="nav-icon">⚙</span> Settings</div>
 
       <div class="sidebar-footer">
         <div class="avatar-row">
@@ -433,17 +433,64 @@
 
       </div><!-- /view-tools -->
 
-      <!-- ▸ SETTINGS (stub) ──────────────────────────────────── -->
+      <!-- ▸ SETTINGS ─────────────────────────────────────────── -->
       <div id="view-settings" class="view">
+
+        <!-- App Lock -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">APP LOCK</div></div>
+          <div class="settings-section">
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <div class="setting-name">ENABLE APP LOCK</div>
+                <div class="setting-sub">Require fingerprint or PIN to open JARVIS</div>
+              </div>
+              <button class="setting-toggle" id="lock-toggle" data-state="off">OFF</button>
+            </div>
+
+            <div class="setting-row lock-config-row hidden">
+              <div class="setting-label">
+                <div class="setting-name">FINGERPRINT / FACE ID</div>
+                <div class="setting-sub" id="lock-bio-status">NOT YET REGISTERED</div>
+              </div>
+              <button class="setting-action-btn" id="lock-register-bio">REGISTER</button>
+            </div>
+
+            <div class="setting-row lock-config-row hidden">
+              <div class="setting-label">
+                <div class="setting-name">PIN CODE</div>
+                <div class="setting-sub" id="lock-pin-status">NOT SET</div>
+              </div>
+              <button class="setting-action-btn" id="lock-set-pin-btn">SET PIN</button>
+            </div>
+
+            <div class="lock-pin-form" id="lock-pin-form">
+              <input type="password" id="lock-pin-new" class="task-input"
+                     placeholder="New PIN (4-8 digits)" inputmode="numeric" maxlength="8" autocomplete="new-password" />
+              <input type="password" id="lock-pin-confirm" class="task-input"
+                     placeholder="Confirm PIN" inputmode="numeric" maxlength="8" autocomplete="new-password" />
+              <div class="lock-form-actions">
+                <button class="task-add-btn" id="lock-pin-save">SAVE PIN</button>
+                <button class="cash-cat-cancel-btn" id="lock-pin-form-cancel">CANCEL</button>
+              </div>
+            </div>
+
+            <div class="lock-settings-msg" id="lock-settings-msg"></div>
+          </div>
+        </div>
+
+        <!-- Integrations stub -->
         <div class="card">
           <div class="card-header"><div class="card-title">INTEGRATIONS</div></div>
           <div class="module-stub">
             <div class="module-stub-icon">⚙</div>
-            <div class="module-stub-title">INTEGRATIONS</div>
-            <div class="module-stub-sub">CONFIGURE API KEYS &amp; CONNECTIONS</div>
+            <div class="module-stub-title">API CONNECTIONS</div>
+            <div class="module-stub-sub">GOOGLE, ANTHROPIC &amp; MORE — COMING SOON</div>
           </div>
         </div>
-      </div>
+
+      </div><!-- /view-settings -->
 
     </div><!-- /center -->
 
@@ -557,6 +604,34 @@
       <span class="bnav-label">TOOLS</span>
     </div>
   </nav>
+
+  <!-- ── App Lock Overlay ─────────────────────────────────────────── -->
+  <div class="lock-overlay" id="lock-overlay">
+    <div class="lock-screen">
+      <div class="lock-brand">
+        <div class="lock-brand-dot"></div>
+        JARVIS
+      </div>
+      <div class="lock-subtitle">SYSTEM LOCKED</div>
+
+      <div class="lock-bio-wrap" id="lock-bio-wrap">
+        <button class="lock-bio-btn" id="lock-bio-btn">
+          <span class="lock-bio-icon">◎</span>
+        </button>
+        <div class="lock-bio-label">TOUCH TO AUTHENTICATE</div>
+      </div>
+
+      <button class="lock-pin-toggle" id="lock-pin-toggle">USE PIN INSTEAD</button>
+
+      <div class="lock-pin-row" id="lock-pin-row">
+        <input type="password" class="lock-pin-input" id="lock-pin-input"
+               placeholder="Enter PIN" maxlength="8" autocomplete="off" inputmode="numeric" />
+        <button class="lock-unlock-btn" id="lock-unlock-btn">UNLOCK</button>
+      </div>
+
+      <div class="lock-error" id="lock-error"></div>
+    </div>
+  </div>
 
   <!-- ── Daily Briefing Modal ─────────────────────────────────────── -->
   <div class="briefing-overlay" id="briefing-overlay">

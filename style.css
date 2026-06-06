@@ -1483,3 +1483,188 @@ body::after {
   .gcal-setup-row { flex-direction: column; }
   .gcal-client-input { width: 100%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LOCK SCREEN
+═══════════════════════════════════════════════════════════════ */
+
+.lock-overlay {
+  display: none; position: fixed; inset: 0;
+  background: var(--bg); z-index: 9998;
+  align-items: center; justify-content: center;
+}
+.lock-overlay.active { display: flex; }
+
+.lock-screen {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 18px;
+  padding: 40px 24px; text-align: center; width: 100%;
+}
+
+/* Brand */
+.lock-brand {
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 40px; font-weight: 700; letter-spacing: 0.18em; color: var(--text);
+}
+.lock-brand-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent), 0 0 24px rgba(0,212,255,0.4);
+  animation: lock-pulse 2.4s ease-in-out infinite;
+}
+@keyframes lock-pulse {
+  0%,100% { box-shadow: 0 0 12px var(--accent), 0 0 24px rgba(0,212,255,0.4); }
+  50%     { box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,212,255,0.65); }
+}
+.lock-subtitle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.24em; color: var(--muted);
+  margin-top: -10px;
+}
+
+/* Biometric button */
+.lock-bio-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  margin: 16px 0 4px;
+}
+.lock-bio-btn {
+  width: 96px; height: 96px; border-radius: 50%;
+  background: rgba(0,212,255,0.06);
+  border: 2px solid rgba(0,212,255,0.28);
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 24px rgba(0,212,255,0.1);
+}
+.lock-bio-btn:hover {
+  background: rgba(0,212,255,0.13);
+  border-color: var(--accent);
+  box-shadow: 0 0 36px rgba(0,212,255,0.3);
+  transform: scale(1.05);
+}
+.lock-bio-btn:active { transform: scale(0.97); }
+.lock-bio-btn.loading {
+  animation: bio-spin 1s linear infinite;
+  border-color: var(--accent);
+}
+@keyframes bio-spin {
+  to { transform: rotate(360deg); }
+}
+.lock-bio-icon { font-size: 40px; color: var(--accent); line-height: 1; }
+.lock-bio-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.16em; color: var(--muted);
+}
+
+/* PIN toggle link */
+.lock-pin-toggle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
+  background: none; border: none; cursor: pointer;
+  padding: 4px 8px; transition: color 0.15s;
+}
+.lock-pin-toggle:hover { color: var(--text); }
+
+/* PIN entry row */
+.lock-pin-row {
+  display: none; flex-direction: column; align-items: center; gap: 10px;
+  width: 100%; max-width: 300px;
+}
+.lock-pin-row.open { display: flex; }
+.lock-pin-input {
+  width: 100%; text-align: center; font-size: 24px; letter-spacing: 0.5em;
+  background: rgba(0,212,255,0.04);
+  border: 1px solid var(--border); border-radius: 3px;
+  padding: 12px 16px; color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  transition: border-color 0.15s;
+}
+.lock-pin-input:focus { outline: none; border-color: var(--accent); }
+.lock-unlock-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px; letter-spacing: 0.16em;
+  padding: 11px 0; width: 100%; border-radius: 2px; cursor: pointer;
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.3);
+  color: var(--accent); transition: all 0.15s;
+}
+.lock-unlock-btn:hover { background: rgba(0,212,255,0.2); border-color: var(--accent); }
+
+/* Error */
+.lock-error {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.12em; color: var(--accent2);
+  min-height: 20px; opacity: 0; transition: opacity 0.2s;
+}
+.lock-error.visible { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS VIEW
+═══════════════════════════════════════════════════════════════ */
+
+.settings-section { padding: 0 0 4px; }
+
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid rgba(26,58,82,0.4);
+  gap: 16px;
+}
+.setting-row:last-of-type { border-bottom: none; }
+.setting-row.hidden { display: none; }
+.setting-label { flex: 1; }
+.setting-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 0.1em; color: var(--text);
+}
+.setting-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; color: var(--muted); letter-spacing: 0.06em; margin-top: 3px;
+}
+.setting-toggle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; letter-spacing: 0.12em;
+  padding: 6px 16px; border-radius: 2px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--muted); transition: all 0.15s; min-width: 54px;
+}
+.setting-toggle[data-state="on"] {
+  background: rgba(0,212,255,0.1);
+  border-color: var(--accent); color: var(--accent);
+}
+.setting-action-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em;
+  padding: 6px 14px; border-radius: 2px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); transition: all 0.15s; white-space: nowrap;
+}
+.setting-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.lock-pin-form {
+  display: none; flex-direction: column; gap: 8px;
+  padding: 10px 16px 14px;
+  border-top: 1px solid rgba(26,58,82,0.4);
+}
+.lock-pin-form.open { display: flex; }
+.lock-form-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+.lock-settings-msg {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em;
+  padding: 6px 16px; min-height: 28px; opacity: 0; transition: opacity 0.2s;
+}
+.lock-settings-msg.visible { opacity: 1; }
+.lock-settings-msg.ok  { color: var(--accent3); }
+.lock-settings-msg.err { color: var(--accent2); }
+
+/* LOCK NOW button in topbar */
+.lock-now-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 2px; cursor: pointer;
+  background: rgba(255,107,43,0.08);
+  border: 1px solid rgba(255,107,43,0.25);
+  color: var(--accent2); transition: all 0.15s;
+  align-items: center; gap: 5px;
+}
+.lock-now-btn:hover { background: rgba(255,107,43,0.16); border-color: var(--accent2); }

@@ -1,4 +1,4 @@
-const CACHE = 'jarvis-v17';
+const CACHE = 'jarvis-v18';
 
 const SHELL = [
   '/',
@@ -23,6 +23,7 @@ const SHELL = [
   '/src/modules/briefing.js',
   '/src/modules/charts.js',
   '/src/modules/gcal.js',
+  '/src/modules/lock.js',
   '/manifest.json',
   '/icon.png',
   '/offline.html',
@@ -38,7 +39,7 @@ const NETWORK_FIRST = new Set([
   '/src/modules/cash.js', '/src/modules/news.js', '/src/modules/weather.js',
   '/src/modules/command.js', '/src/modules/tools.js',
   '/src/modules/theme.js', '/src/modules/briefing.js',
-  '/src/modules/charts.js', '/src/modules/gcal.js',
+  '/src/modules/charts.js', '/src/modules/gcal.js', '/src/modules/lock.js',
 ]);
 
 // Install: pre-cache the app shell
