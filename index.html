@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v16';
+  var K='jv_bust_v17';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -73,6 +73,7 @@
       SYSTEM ACTIVE &nbsp;|&nbsp; <span id="live-time">--:--:--</span> &nbsp;|&nbsp; DAR ES SALAAM, TZ
     </div>
     <div class="topbar-right">
+      <button class="voice-btn" id="voice-btn" style="display:none" title="Voice Command">◎ MIC</button>
       <button class="lock-now-btn" id="lock-now-btn" style="display:none">⊠ LOCK</button>
       <button class="theme-toggle" id="theme-toggle">◑ DARK</button>
       <span class="status-pill status-ok">GMAIL ● ONLINE</span>
@@ -480,13 +481,45 @@
           </div>
         </div>
 
-        <!-- Integrations stub -->
+        <!-- Cloud Sync -->
         <div class="card">
-          <div class="card-header"><div class="card-title">INTEGRATIONS</div></div>
-          <div class="module-stub">
-            <div class="module-stub-icon">⚙</div>
-            <div class="module-stub-title">API CONNECTIONS</div>
-            <div class="module-stub-sub">GOOGLE, ANTHROPIC &amp; MORE — COMING SOON</div>
+          <div class="card-header"><div class="card-title">CLOUD SYNC</div></div>
+          <div class="settings-section">
+
+            <div class="setting-row">
+              <div class="setting-label">
+                <div class="setting-name">BACKUP STATUS</div>
+                <div class="setting-sub" id="sync-last-time">NEVER SYNCED</div>
+              </div>
+              <div class="sync-status-badge">
+                <span class="sync-dot" id="sync-status-dot"></span>
+                <span class="sync-status-text" id="sync-status-label">NOT CONNECTED</span>
+              </div>
+            </div>
+
+            <!-- Setup (shown when not connected) -->
+            <div id="sync-setup-section">
+              <div class="setting-sub sync-setup-hint">
+                Uses <strong>JSONBin.io</strong> (free). Sign up at jsonbin.io → copy your
+                Master Key → paste below and click SETUP. JARVIS creates a private backup bin automatically.
+              </div>
+              <div class="sync-key-row">
+                <input type="password" id="sync-apikey-input" class="lock-pin-input"
+                       placeholder="PASTE MASTER KEY…" autocomplete="off" />
+                <button class="setting-action-btn" id="sync-setup-btn">SETUP</button>
+              </div>
+            </div>
+
+            <!-- Management (shown when connected) -->
+            <div id="sync-mgmt-section" class="hidden">
+              <div class="sync-btn-row">
+                <button class="setting-action-btn" id="sync-backup-btn">⬆ BACKUP NOW</button>
+                <button class="setting-action-btn" id="sync-restore-btn">⬇ RESTORE</button>
+                <button class="setting-action-btn sync-danger-btn" id="sync-disconnect-btn">✕ DISCONNECT</button>
+              </div>
+            </div>
+
+            <div class="sync-msg" id="sync-msg"></div>
           </div>
         </div>
 

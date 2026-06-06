@@ -20,6 +20,8 @@ import { initBriefing }               from './modules/briefing.js';
 import { renderExpenseCharts }         from './modules/charts.js';
 import { setupGCal, renderGCalStatus } from './modules/gcal.js';
 import { initLock, setupLockSettings } from './modules/lock.js';
+import { initVoice }                   from './modules/voice.js';
+import { initSync, setupSyncSettings } from './modules/sync.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
@@ -45,6 +47,9 @@ initNews();         // wire tabs, modal, delegation; kick off dashboard fetch
 initWeather();      // fire-and-forget weather fetch
 initCommandBar();   // wire input, keyboard shortcut, bus subscription
 setupGCal();        // load GIS script, wire OAuth delegation
+initVoice();        // wire mic button; hides itself if Web Speech API unavailable
+initSync();         // render sync status, start periodic auto-backup
+setupSyncSettings();// wire settings-page sync controls
 initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt
 initRouter();       // LAST — wires nav delegation + restores hash (fires route hooks)

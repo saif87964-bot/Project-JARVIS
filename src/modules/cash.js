@@ -232,6 +232,11 @@ function submitCashTx() {
   amtEl?.focus();
 }
 
+// ── Voice entry point (called from voice.js) ──────────────────
+export function addCashTxVoice(amount, type, category, note) {
+  addCashTx(amount, type, category, note);
+}
+
 // ── initCash — called on every navigate-to-cash ────────────────
 export function initCash() {
   renderCash();
