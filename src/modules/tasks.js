@@ -30,14 +30,68 @@ function seedDefaultTasks() {
   ]);
 }
 
+// ── Priority / due-date helpers ───────────────────────────────
+// Legacy tasks have no priority/due — `urgent:true` maps to high.
+const PRIO_WEIGHT = { high: 2, med: 1, low: 0 };
+
+function _prioOf(t) {
+  if (t.priority) return t.priority;
+  return t.urgent ? 'high' : 'med';
+}
+
+function _todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function _isOverdue(t) {
+  return !!t.due && !t.done && t.due < _todayKey();
+}
+
+// Overdue first (oldest due first), then priority, then newest created
+function _sortTasks(arr) {
+  return [...arr].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const aOver = _isOverdue(a), bOver = _isOverdue(b);
+    if (aOver !== bOver) return aOver ? -1 : 1;
+    if (aOver && bOver)  return a.due.localeCompare(b.due);
+    const pw = PRIO_WEIGHT[_prioOf(b)] - PRIO_WEIGHT[_prioOf(a)];
+    if (pw !== 0) return pw;
+    return (b.createdAt || 0) - (a.createdAt || 0);
+  });
+}
+
+function _dueLabel(t) {
+  if (!t.due) return '';
+  const today = _todayKey();
+  if (_isOverdue(t)) {
+    const days = Math.round((new Date(today) - new Date(t.due)) / 86400000);
+    return days === 1 ? '1D LATE' : `${days}D LATE`;
+  }
+  if (t.due === today) return 'TODAY';
+  const tmrw = new Date(); tmrw.setDate(tmrw.getDate() + 1);
+  const tmrwKey = `${tmrw.getFullYear()}-${String(tmrw.getMonth() + 1).padStart(2, '0')}-${String(tmrw.getDate()).padStart(2, '0')}`;
+  if (t.due === tmrwKey) return 'TMRW';
+  return new Date(t.due + 'T00:00:00')
+    .toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase();
+}
+
+function _prioChip(t) {
+  const p = _prioOf(t);
+  const letter = p === 'high' ? 'H' : p === 'low' ? 'L' : 'M';
+  return `<span class="task-prio-chip p-${p}" title="${p.toUpperCase()} priority">${letter}</span>`;
+}
+
 // ── CRUD ───────────────────────────────────────────────────────
-export function addTask(text, time = '') {
+export function addTask(text, time = '', priority = 'med', due = '') {
   const tasks = getTasks();
   tasks.unshift({
     id:        't' + Date.now(),
     text:      text.trim(),
     time:      time.trim(),
-    urgent:    false,
+    priority,
+    due,
+    urgent:    priority === 'high',
     done:      false,
     createdAt: Date.now(),
   });
@@ -88,12 +142,14 @@ export function renderTasks() {
     return;
   }
 
-  list.innerHTML = filtered.map(t => `
-    <div class="task-item${t.done ? ' task-done' : ''}${t.urgent ? ' task-urgent' : ''}" data-id="${t.id}">
+  list.innerHTML = _sortTasks(filtered).map(t => `
+    <div class="task-item${t.done ? ' task-done' : ''}${_prioOf(t) === 'high' ? ' task-urgent' : ''}${_isOverdue(t) ? ' task-overdue' : ''}" data-id="${t.id}">
       <div class="task-check" data-action="toggle-task" data-id="${t.id}">${t.done ? '✓' : ''}</div>
+      ${_prioChip(t)}
       <div class="task-body">
         <div class="task-text">${esc(t.text)}</div>
       </div>
+      ${t.due ? `<div class="task-due-lbl${_isOverdue(t) ? ' overdue' : ''}">${_dueLabel(t)}</div>` : ''}
       ${t.time ? `<div class="task-time">${esc(t.time)}</div>` : ''}
       <div class="task-del" data-action="delete-task" data-id="${t.id}" title="Delete">×</div>
     </div>`).join('');
@@ -106,7 +162,7 @@ export function updateDashboardTasks() {
 
   const tasks   = getTasks();
   const active  = tasks.filter(t => !t.done);
-  const preview = tasks.slice(0, 4);
+  const preview = _sortTasks(tasks).slice(0, 4);
 
   const gsEl = document.getElementById('gs-tasks');
   if (gsEl) gsEl.textContent = active.length;
@@ -117,12 +173,14 @@ export function updateDashboardTasks() {
   }
 
   el.innerHTML = preview.map(t => `
-    <div class="task-item${t.done ? ' task-done' : ''}${t.urgent ? ' task-urgent' : ''}"
+    <div class="task-item${t.done ? ' task-done' : ''}${_prioOf(t) === 'high' ? ' task-urgent' : ''}${_isOverdue(t) ? ' task-overdue' : ''}"
          data-action="toggle-task" data-id="${t.id}">
       <div class="task-check">${t.done ? '✓' : ''}</div>
+      ${_prioChip(t)}
       <div class="task-body">
         <div class="task-text">${esc(t.text)}</div>
       </div>
+      ${t.due ? `<div class="task-due-lbl${_isOverdue(t) ? ' overdue' : ''}">${_dueLabel(t)}</div>` : ''}
       ${t.time ? `<div class="task-time">${esc(t.time)}</div>` : ''}
     </div>`).join('') +
     (tasks.length > 4
@@ -162,6 +220,14 @@ export function initTasks() {
     if (e.key === 'Enter') _submitTask();
   });
 
+  // Priority cycle button: MED → HIGH → LOW → MED
+  document.getElementById('task-prio-btn')?.addEventListener('click', () => {
+    const btn  = document.getElementById('task-prio-btn');
+    const next = { med: 'high', high: 'low', low: 'med' }[btn.dataset.prio] || 'med';
+    btn.dataset.prio = next;
+    btn.textContent  = next.toUpperCase();
+  });
+
   // Delegated actions — covers #task-list AND #dashboard-tasks without re-binding on render
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-action="toggle-task"], [data-action="delete-task"]');
@@ -174,10 +240,14 @@ export function initTasks() {
 function _submitTask() {
   const input     = document.getElementById('task-input');
   const timeInput = document.getElementById('task-time');
+  const dueInput  = document.getElementById('task-due');
+  const prioBtn   = document.getElementById('task-prio-btn');
   const text      = input?.value.trim();
   if (!text) { input?.focus(); return; }
-  addTask(text, timeInput?.value || '');
+  addTask(text, timeInput?.value || '', prioBtn?.dataset.prio || 'med', dueInput?.value || '');
   input.value = '';
   if (timeInput) timeInput.value = '';
+  if (dueInput)  dueInput.value  = '';
+  if (prioBtn) { prioBtn.dataset.prio = 'med'; prioBtn.textContent = 'MED'; }
   input.focus();
 }

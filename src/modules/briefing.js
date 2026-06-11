@@ -6,7 +6,7 @@
 import { storage }      from '../core/storage.js';
 import { bus }          from '../core/bus.js';
 import { STORAGE_KEYS } from '../config.js';
-import { fmtTZS }       from '../utils.js';
+import { fmtTZS, esc }  from '../utils.js';
 
 const BRIEF_DATE_KEY = 'jv_brief_date';
 
@@ -116,5 +116,64 @@ function _renderBriefing() {
         </div>
       </div>
     </div>
+
+    ${_insightsSection(txs, now)}
   `;
+}
+
+// ── Spending insights ──────────────────────────────────────────
+// Computed locally from the transaction log. Renders nothing when
+// there isn't enough data to say something meaningful.
+
+function _insightsSection(txs, now) {
+  const lines = _spendingInsights(txs, now);
+  if (lines.length === 0) return '';
+  return `
+    <div class="brief-section">
+      <div class="brief-section-title">▸ SPENDING INSIGHTS</div>
+      ${lines.map(l => `<div class="brief-item">${l}</div>`).join('')}
+    </div>`;
+}
+
+function _spendingInsights(txs, now) {
+  const DAY     = 86400000;
+  const debits  = txs.filter(t => t.type === 'debit' && t.date);
+  const ageDays = tx => (now - new Date(tx.date)) / DAY;
+
+  const last7 = debits.filter(t => ageDays(t) <= 7);
+  const prev7 = debits.filter(t => ageDays(t) > 7 && ageDays(t) <= 14);
+  const sum   = arr => arr.reduce((s, t) => s + t.amount, 0);
+
+  const lines = [];
+
+  // 1. Week-over-week change
+  const curTotal = sum(last7), prevTotal = sum(prev7);
+  if (curTotal > 0 && prevTotal > 0) {
+    const pct = Math.round((curTotal - prevTotal) / prevTotal * 100);
+    if (Math.abs(pct) >= 10) {
+      lines.push(pct > 0
+        ? `⚠ Spending is <b>${pct}% higher</b> than last week (${fmtTZS(curTotal)} vs ${fmtTZS(prevTotal)})`
+        : `✓ Spending is <b>${Math.abs(pct)}% lower</b> than last week (${fmtTZS(curTotal)} vs ${fmtTZS(prevTotal)})`);
+    }
+  }
+
+  // 2. Top category this week
+  if (last7.length > 0) {
+    const byCat = {};
+    last7.forEach(t => { byCat[t.category] = (byCat[t.category] || 0) + t.amount; });
+    const [topCat, topAmt] = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+    const share = Math.round(topAmt / curTotal * 100);
+    const cats  = storage.get('jv_cash_cats') || [];
+    const label = cats.find(c => c.id === topCat)?.label || topCat.toUpperCase();
+    lines.push(`▦ Top category this week: <b>${esc(label)}</b> — ${fmtTZS(topAmt)} (${share}% of spend)`);
+  }
+
+  // 3. Largest single expense this week
+  if (last7.length >= 2) {
+    const biggest = [...last7].sort((a, b) => b.amount - a.amount)[0];
+    const what = biggest.note || (biggest.category || '').toUpperCase();
+    lines.push(`◆ Largest expense: <b>${esc(what)}</b> — ${fmtTZS(biggest.amount)}`);
+  }
+
+  return lines.slice(0, 3);
 }

@@ -1937,6 +1937,107 @@ body::after {
 .sync-msg.ok  { color: var(--accent3); }
 .sync-msg.err { color: var(--accent2); }
 
+/* ── Task priorities & due dates ─────────────────────────────── */
+.task-prio-chip {
+  font-family: var(--font-mono);
+  font-size: 8px; font-weight: 700;
+  width: 16px; height: 16px; border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; letter-spacing: 0;
+}
+.task-prio-chip.p-high { color: var(--accent2); background: rgba(255,120,73,0.12);  border: 1px solid rgba(255,120,73,0.35); }
+.task-prio-chip.p-med  { color: var(--accent);  background: rgba(45,214,255,0.08);  border: 1px solid rgba(45,214,255,0.25); }
+.task-prio-chip.p-low  { color: var(--muted);   background: rgba(93,127,147,0.08);  border: 1px solid rgba(93,127,147,0.3);  }
+
+.task-due-lbl {
+  font-family: var(--font-mono);
+  font-size: 8.5px; letter-spacing: 0.06em;
+  color: var(--muted);
+  border: 1px solid rgba(45,214,255,0.14);
+  border-radius: 999px; padding: 2px 8px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.task-due-lbl.overdue {
+  color: var(--accent2);
+  border-color: rgba(255,120,73,0.45);
+  background: rgba(255,120,73,0.08);
+}
+.task-overdue { box-shadow: inset 2px 0 0 var(--accent2); }
+.task-overdue .task-text { color: #ffd9c8; }
+
+.task-due-input {
+  flex-shrink: 0; width: 118px;
+  background: rgba(45,214,255,0.03);
+  border: 1px solid rgba(45,214,255,0.14); border-radius: var(--radius-sm);
+  color: var(--muted); font-family: var(--font-mono); font-size: 10px;
+  padding: 5px 7px; cursor: pointer;
+  color-scheme: dark;
+  transition: border-color 0.15s;
+}
+.task-due-input:focus { outline: none; border-color: rgba(45,214,255,0.5); color: var(--text); }
+[data-theme="light"] .task-due-input { color-scheme: light; }
+
+.task-prio-btn {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
+  padding: 6px 10px; border-radius: 999px; cursor: pointer;
+  background: rgba(45,214,255,0.03); border: 1px solid rgba(45,214,255,0.16);
+  color: var(--muted); transition: all 0.15s;
+  flex-shrink: 0; min-width: 46px;
+}
+.task-prio-btn[data-prio="high"] { color: var(--accent2); border-color: rgba(255,120,73,0.5); background: rgba(255,120,73,0.08); }
+.task-prio-btn[data-prio="med"]  { color: var(--accent);  border-color: rgba(45,214,255,0.4); }
+.task-prio-btn[data-prio="low"]  { color: var(--muted); }
+
+@media (max-width: 768px) {
+  #view-reminders .task-add-form { flex-wrap: wrap; }
+  #view-reminders .task-input { flex: 1 1 100%; }
+  .task-due-input { flex: 1; width: auto; }
+}
+
+/* ── Dashboard cash snapshot widget ──────────────────────────── */
+.dash-cash-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; gap: 16px;
+}
+.dash-cash-bal {
+  font-family: var(--font-disp);
+  font-size: 22px; font-weight: 700; color: #eafaff;
+  text-shadow: 0 0 20px rgba(45,214,255,0.35);
+}
+.dash-cash-bal.negative { color: var(--accent2); text-shadow: 0 0 20px rgba(255,120,73,0.35); }
+.dash-cash-lbl {
+  font-family: var(--font-mono);
+  font-size: 8px; color: var(--muted); letter-spacing: 0.14em; margin-top: 4px;
+}
+.dash-cash-side { text-align: right; }
+.dash-cash-io { font-size: 13px; font-weight: 700; font-family: var(--font-ui); }
+.dash-cash-io.in  { color: var(--accent3); }
+.dash-cash-io.out { color: var(--accent2); }
+[data-theme="light"] .dash-cash-bal { color: #11303d; text-shadow: none; }
+
+/* ── Widget settings rows ────────────────────────────────────── */
+.widget-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.widget-move-btn {
+  font-family: var(--font-mono); font-size: 9px;
+  width: 26px; height: 26px; border-radius: 999px; cursor: pointer;
+  background: rgba(45,214,255,0.03); border: 1px solid rgba(45,214,255,0.16);
+  color: var(--muted); transition: all 0.15s;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.widget-move-btn:hover:not(:disabled) { color: var(--accent); border-color: rgba(45,214,255,0.5); }
+.widget-move-btn:disabled { opacity: 0.3; cursor: default; }
+
+/* ── Voice language buttons ──────────────────────────────────── */
+.voice-lang-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.setting-action-btn.active {
+  border-color: rgba(45,214,255,0.6); color: var(--accent);
+  background: rgba(45,214,255,0.1);
+  box-shadow: 0 0 12px -5px rgba(45,214,255,0.6);
+}
+
+/* ── Briefing insight emphasis ───────────────────────────────── */
+.brief-item b { color: var(--accent); font-weight: 700; }
+
 /* ── Reduced motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

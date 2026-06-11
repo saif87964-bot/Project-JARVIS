@@ -1,9 +1,9 @@
-const CACHE = 'jarvis-v21';
+const CACHE = 'jarvis-v22';
 
 const SHELL = [
   '/',
   '/index.html',
-  '/style.css?v=18',
+  '/style.css?v=19',
   '/src/main.js',
   '/src/config.js',
   '/src/utils.js',
@@ -26,6 +26,7 @@ const SHELL = [
   '/src/modules/lock.js',
   '/src/modules/voice.js',
   '/src/modules/sync.js',
+  '/src/modules/widgets.js',
   '/manifest.json',
   '/icon.png',
   '/offline.html',
@@ -34,7 +35,7 @@ const SHELL = [
 // All JS modules and CSS use network-first so deploys are immediately visible.
 const NETWORK_FIRST = new Set([
   '/', '/index.html',
-  '/style.css', '/style.css?v=18',
+  '/style.css', '/style.css?v=19',
   '/src/main.js', '/src/config.js', '/src/utils.js',
   '/src/core/router.js', '/src/core/storage.js', '/src/core/bus.js', '/src/core/pwa.js',
   '/src/modules/clock.js', '/src/modules/tasks.js', '/src/modules/calendar.js',
@@ -42,7 +43,7 @@ const NETWORK_FIRST = new Set([
   '/src/modules/command.js', '/src/modules/tools.js',
   '/src/modules/theme.js', '/src/modules/briefing.js',
   '/src/modules/charts.js', '/src/modules/gcal.js', '/src/modules/lock.js',
-  '/src/modules/voice.js', '/src/modules/sync.js',
+  '/src/modules/voice.js', '/src/modules/sync.js', '/src/modules/widgets.js',
 ]);
 
 // Install: pre-cache the app shell

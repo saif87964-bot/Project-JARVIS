@@ -20,12 +20,14 @@ import { initBriefing }               from './modules/briefing.js';
 import { renderExpenseCharts }         from './modules/charts.js';
 import { setupGCal, renderGCalStatus } from './modules/gcal.js';
 import { initLock, setupLockSettings } from './modules/lock.js';
-import { initVoice }                   from './modules/voice.js';
-import { initSync, setupSyncSettings } from './modules/sync.js';
+import { initVoice, setupVoiceSettings } from './modules/voice.js';
+import { initSync, setupSyncSettings }   from './modules/sync.js';
+import { setupWidgets, renderDashCash }  from './modules/widgets.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
 bus.on('route:changed', ({ viewId }) => {
+  if (viewId === 'dashboard') renderDashCash();
   if (viewId === 'reminders') renderTasks();
   if (viewId === 'news')      loadFullNews();
   if (viewId === 'calendar')  { initCalendar(); renderGCalStatus(); }
@@ -48,8 +50,10 @@ initWeather();      // fire-and-forget weather fetch
 initCommandBar();   // wire input, keyboard shortcut, bus subscription
 setupGCal();        // load GIS script, wire OAuth delegation
 initVoice();        // wire mic button; hides itself if Web Speech API unavailable
+setupVoiceSettings();// wire settings-page voice language buttons
 initSync();         // render sync status, start periodic auto-backup
 setupSyncSettings();// wire settings-page sync controls
+setupWidgets();     // apply dashboard widget order/visibility, wire settings
 initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt
 initRouter();       // LAST — wires nav delegation + restores hash (fires route hooks)

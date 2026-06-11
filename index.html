@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v18';
+  var K='jv_bust_v19';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=19">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -127,7 +127,7 @@
       <!-- ▸ DASHBOARD ───────────────────────────────────────── -->
       <div id="view-dashboard" class="view active">
 
-        <div class="greeting-card">
+        <div class="greeting-card" data-widget="greeting">
           <div class="greeting-main" id="greeting-main">Good morning, <span>Saif.</span></div>
           <div class="greeting-sub" id="greeting-sub">// LOADING...</div>
           <div class="greeting-stats">
@@ -138,8 +138,27 @@
           </div>
         </div>
 
+        <!-- Cash snapshot -->
+        <div class="card" data-widget="cash">
+          <div class="card-header">
+            <div class="card-title">CASH SNAPSHOT</div>
+            <div class="card-action" data-view="cash">OPEN →</div>
+          </div>
+          <div class="dash-cash-row">
+            <div class="dash-cash-main">
+              <div class="dash-cash-bal" id="dash-cash-bal">—</div>
+              <div class="dash-cash-lbl">CASH IN HAND</div>
+            </div>
+            <div class="dash-cash-side">
+              <div class="dash-cash-io in"  id="dash-cash-in">+ —</div>
+              <div class="dash-cash-io out" id="dash-cash-out">− —</div>
+              <div class="dash-cash-lbl">TODAY</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Tasks preview -->
-        <div class="card">
+        <div class="card" data-widget="tasks">
           <div class="card-header">
             <div class="card-title">REMINDERS &amp; TASKS</div>
             <div class="card-action" data-view="reminders">VIEW ALL →</div>
@@ -148,7 +167,7 @@
         </div>
 
         <!-- News preview -->
-        <div class="card">
+        <div class="card" data-widget="news">
           <div class="card-header">
             <div class="card-title">NEWS FEED</div>
             <div class="card-action" id="dashboard-news-refresh">REFRESH</div>
@@ -170,6 +189,8 @@
           <div class="task-add-form">
             <input id="task-input" class="task-input" placeholder="What needs to be done?" maxlength="140" autocomplete="off" />
             <input id="task-time" class="task-time-input" type="text" placeholder="09:00" maxlength="8" />
+            <input id="task-due" class="task-due-input" type="date" title="Due date" />
+            <button class="task-prio-btn" id="task-prio-btn" data-prio="med" title="Priority">MED</button>
             <button class="task-add-btn" id="task-add-btn">+ ADD</button>
           </div>
 
@@ -482,6 +503,29 @@
             </div>
 
             <div class="lock-settings-msg" id="lock-settings-msg"></div>
+          </div>
+        </div>
+
+        <!-- Dashboard Widgets -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">DASHBOARD WIDGETS</div></div>
+          <div class="settings-section" id="widget-settings-list"></div>
+        </div>
+
+        <!-- Voice -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">VOICE</div></div>
+          <div class="settings-section">
+            <div class="setting-row">
+              <div class="setting-label">
+                <div class="setting-name">RECOGNITION LANGUAGE</div>
+                <div class="setting-sub">Language the mic listens in — commands work in both either way</div>
+              </div>
+              <div class="voice-lang-btns">
+                <button class="setting-action-btn" id="voice-lang-en">ENGLISH</button>
+                <button class="setting-action-btn" id="voice-lang-sw">SWAHILI</button>
+              </div>
+            </div>
           </div>
         </div>
 
