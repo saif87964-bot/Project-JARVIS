@@ -23,6 +23,8 @@ import { initLock, setupLockSettings } from './modules/lock.js';
 import { initVoice, setupVoiceSettings } from './modules/voice.js';
 import { initSync, setupSyncSettings }   from './modules/sync.js';
 import { setupWidgets, renderDashCash }  from './modules/widgets.js';
+import { setupBudget, renderBudget }     from './modules/budget.js';
+import { setupImport }                   from './modules/import.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
@@ -32,6 +34,7 @@ bus.on('route:changed', ({ viewId }) => {
   if (viewId === 'news')      loadFullNews();
   if (viewId === 'calendar')  { initCalendar(); renderGCalStatus(); }
   if (viewId === 'cash')      { initCash(); renderExpenseCharts(); }
+  if (viewId === 'budget')    renderBudget();
   if (viewId === 'tools')     onEnterTools();
 });
 
@@ -54,6 +57,8 @@ setupVoiceSettings();// wire settings-page voice language buttons
 initSync();         // render sync status, start periodic auto-backup
 setupSyncSettings();// wire settings-page sync controls
 setupWidgets();     // apply dashboard widget order/visibility, wire settings
+setupBudget();      // wire budget view delegation + auto-save
+setupImport();      // wire statement-import file picker + wizard
 initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt
 initRouter();       // LAST — wires nav delegation + restores hash (fires route hooks)

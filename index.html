@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v19';
+  var K='jv_bust_v20';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="style.css?v=20">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -97,6 +97,7 @@
       <div class="nav-item" data-view="news"><span class="nav-icon">▦</span> News Feed</div>
       <div class="nav-item" data-view="calendar"><span class="nav-icon">◷</span> Calendar</div>
       <div class="nav-item" data-view="cash"><span class="nav-icon">◉</span> Cash</div>
+      <div class="nav-item" data-view="budget"><span class="nav-icon">◧</span> Budget</div>
       <div class="nav-item" data-view="tools"><span class="nav-icon">⊞</span> Tools</div>
       <div class="nav-item" data-view="reminders"><span class="nav-icon">◈</span> Tasks</div>
 
@@ -293,6 +294,9 @@
       <!-- ▸ CASH / PETTY CASH ─────────────────────────────────── -->
       <div id="view-cash" class="view">
 
+        <!-- Account selector — rendered dynamically by cash.js -->
+        <div class="cash-accounts" id="cash-accounts"></div>
+
         <!-- Running balance card -->
         <div class="card cash-balance-card">
           <div class="cash-bal-label">CASH IN HAND</div>
@@ -368,7 +372,42 @@
           </div>
         </div>
 
+        <!-- Bank statement import -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">IMPORT BANK STATEMENT</div>
+            <label class="card-action" for="stmt-file" style="cursor:pointer">⬆ CHOOSE FILE</label>
+          </div>
+          <input type="file" id="stmt-file" accept=".csv,.txt,.tsv" style="display:none" />
+          <div class="stmt-hint">
+            CSV / TSV exports from any bank work — pick the file, map the date /
+            description / amount columns, choose the account. Re-importing an
+            overlapping statement is safe: duplicates are skipped.
+          </div>
+          <div class="stmt-wizard" id="stmt-wizard"></div>
+        </div>
+
       </div><!-- /view-cash -->
+
+      <!-- ▸ BUDGET ─────────────────────────────────────────────── -->
+      <div id="view-budget" class="view">
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">MONTHLY BUDGET</div>
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="bgt-prev">&#8249;</button>
+              <span class="cal-month-label" id="bgt-month-label">— —</span>
+              <button class="cal-nav-btn" id="bgt-next">&#8250;</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="budget-body" class="budget-body">
+          <div class="card"><div class="loading">LOADING...</div></div>
+        </div>
+
+      </div><!-- /view-budget -->
 
       <!-- ▸ TOOLS ──────────────────────────────────────────────── -->
       <div id="view-tools" class="view">
@@ -679,6 +718,10 @@
     <div class="bnav-item" data-view="cash">
       <span class="bnav-icon">◉</span>
       <span class="bnav-label">CASH</span>
+    </div>
+    <div class="bnav-item" data-view="budget">
+      <span class="bnav-icon">◧</span>
+      <span class="bnav-label">BUDGET</span>
     </div>
     <div class="bnav-item" data-view="tools">
       <span class="bnav-icon">⊞</span>

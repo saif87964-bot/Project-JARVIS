@@ -28,6 +28,7 @@ const VIEW_MAP = {
   finance:     'cash',      wallet:    'cash',
   tools:       'tools',     calculator:'tools',
   settings:    'settings',  setting:   'settings',
+  budget:      'budget',
   // Swahili
   nyumbani:    'dashboard', mwanzo:    'dashboard',
   kazi:        'reminders', orodha:    'reminders',
@@ -36,6 +37,7 @@ const VIEW_MAP = {
   pesa:        'cash',      fedha:     'cash',  hela: 'cash',
   zana:        'tools',     vifaa:     'tools',
   mipangilio:  'settings',  mpangilio: 'settings',
+  bajeti:      'budget',
 };
 
 // Swahili number words
@@ -260,7 +262,7 @@ function _guessCategory(text) {
   if (/business|client|invoice|office|meeting|contract|biashara|mteja|ofisi|mkataba|kikao/.test(n))
     return 'business';
 
-  return cats[0]?.id || 'misc';
+  return cats.find(c => c.id === 'misc') ? 'misc' : (cats[0]?.id || 'misc');
 }
 
 function _respond(msg, isErr) {

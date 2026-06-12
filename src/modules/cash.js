@@ -11,6 +11,7 @@ import { esc, fmtTZS }              from '../utils.js';
 
 let cashTxType = 'debit';
 let cashTxCat  = 'misc';
+let activeAcc  = 'all';   // 'all' or an account id
 
 // ── Storage ────────────────────────────────────────────────────
 function getCashData() {
@@ -85,33 +86,144 @@ function _submitCatAdd() {
   _hideCatAddRow();
 }
 
-// ── Recalculate all running balances from oldest to newest ─────
-// Required after a delete, since balanceAfter values shift.
-function recalcCash(data) {
-  const oldest = [...data.transactions].reverse(); // oldest first
-  let running  = 0;
-  oldest.forEach(tx => {
-    running = tx.type === 'credit' ? running + tx.amount : running - tx.amount;
-    tx.balanceAfter = running;
+// ── Accounts (multiple wallets: cash, bank, etc.) ──────────────
+const ACC_KEY = 'jv_cash_accounts';
+
+export function getAccounts() {
+  const saved = storage.get(ACC_KEY);
+  if (!saved) {
+    const defaults = [
+      { id: 'cash', label: 'CASH'      },
+      { id: 'crdb', label: 'CRDB BANK' },
+    ];
+    storage.set(ACC_KEY, defaults);
+    return defaults;
+  }
+  return saved;
+}
+function saveAccounts(accs) { storage.set(ACC_KEY, accs); }
+
+// Old transactions have no account field — they belong to physical cash
+function txAccount(tx) { return tx.account || 'cash'; }
+
+function addAccount(rawLabel) {
+  const label = rawLabel.trim().toUpperCase().slice(0, 20);
+  if (!label) return;
+  const id = rawLabel.trim().toLowerCase()
+    .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || ('acc' + Date.now());
+  const accs = getAccounts();
+  if (accs.find(a => a.id === id || a.label === label)) return;
+  accs.push({ id, label });
+  saveAccounts(accs);
+  renderAccountChips();
+}
+
+function removeAccount(id) {
+  // Refuse if any transaction lives on this account
+  const hasTxs = getCashData().transactions.some(tx => txAccount(tx) === id);
+  if (hasTxs) {
+    bus.emit('cmd:response', { msg: 'ACCOUNT HAS TRANSACTIONS — CANNOT REMOVE', err: true });
+    return;
+  }
+  const accs = getAccounts().filter(a => a.id !== id);
+  if (accs.length === 0) return;
+  saveAccounts(accs);
+  if (activeAcc === id) activeAcc = 'all';
+  renderAccountChips();
+  renderCash();
+}
+
+function renderAccountChips() {
+  const container = document.getElementById('cash-accounts');
+  if (!container) return;
+  const accs = getAccounts();
+  if (activeAcc !== 'all' && !accs.find(a => a.id === activeAcc)) activeAcc = 'all';
+  container.innerHTML =
+    `<button class="cash-acc-chip${activeAcc === 'all' ? ' active' : ''}" data-acc="all">ALL</button>` +
+    accs.map(a => `
+      <button class="cash-acc-chip${activeAcc === a.id ? ' active' : ''}" data-acc="${esc(a.id)}">
+        ${esc(a.label)}<span class="acc-chip-del" data-del-acc="${esc(a.id)}">×</span>
+      </button>`).join('') +
+    '<button class="cash-acc-chip acc-chip-add" id="acc-add-toggle">＋</button>';
+}
+
+function _accountBalances(data) {
+  const bal = {};
+  data.transactions.forEach(tx => {
+    const acc = txAccount(tx);
+    bal[acc] = (bal[acc] || 0) + (tx.type === 'credit' ? tx.amount : -tx.amount);
   });
-  data.balance      = running;
+  return bal;
+}
+
+// ── Recalculate all running balances from oldest to newest ─────
+// Required after a delete or import. Running balance is tracked
+// PER ACCOUNT; data.balance is the total across all accounts.
+function recalcCash(data) {
+  const oldest  = [...data.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const running = {};
+  oldest.forEach(tx => {
+    const acc = txAccount(tx);
+    running[acc] = (running[acc] || 0) + (tx.type === 'credit' ? tx.amount : -tx.amount);
+    tx.balanceAfter = running[acc];
+  });
+  data.balance      = Object.values(running).reduce((s, v) => s + v, 0);
   data.transactions = oldest.reverse(); // back to newest-first
 }
 
 // ── CRUD ───────────────────────────────────────────────────────
 function addCashTx(amount, type, cat, note) {
-  const data   = getCashData();
-  const newBal = type === 'credit' ? data.balance + amount : data.balance - amount;
+  const data    = getCashData();
+  const account = activeAcc === 'all' ? 'cash' : activeAcc;
   data.transactions.unshift({
     id:           'tx' + Date.now(),
-    type, amount, category: cat,
+    type, amount, category: cat, account,
     note:         note.trim(),
     date:         new Date().toISOString(),
-    balanceAfter: newBal,
+    balanceAfter: 0, // set by recalc
   });
-  data.balance = newBal;
+  recalcCash(data);
   saveCashData(data);
   renderCash();
+}
+
+// ── Bulk import (called from import.js) ────────────────────────
+// rows: [{ date:ISO, amount, type, category, note }]
+// Dedupes against existing transactions by (day, amount, type, account).
+export function addImportedTxs(accountId, rows) {
+  const data = getCashData();
+  const keyOf = (date, amount, type, acc) =>
+    `${String(date).slice(0, 10)}|${amount}|${type}|${acc}`;
+  const existing = new Set(
+    data.transactions.map(tx => keyOf(tx.date, tx.amount, tx.type, txAccount(tx)))
+  );
+
+  let added = 0;
+  rows.forEach((r, i) => {
+    const key = keyOf(r.date, r.amount, r.type, accountId);
+    if (existing.has(key)) return;
+    existing.add(key);
+    data.transactions.push({
+      id:           'imp' + Date.now() + '_' + i,
+      type:         r.type,
+      amount:       r.amount,
+      category:     r.category || 'misc',
+      account:      accountId,
+      note:         (r.note || '').trim().slice(0, 120),
+      date:         r.date,
+      balanceAfter: 0,
+    });
+    added++;
+  });
+
+  if (added > 0) {
+    recalcCash(data);
+    saveCashData(data);
+    renderCash();
+    renderAccountChips();
+    bus.emit('sync:trigger');
+  }
+  return added;
 }
 
 function deleteCashTx(id) {
@@ -126,19 +238,32 @@ function deleteCashTx(id) {
 
 // ── Render ─────────────────────────────────────────────────────
 function renderCash() {
-  const data = getCashData();
+  const data    = getCashData();
+  const accs    = getAccounts();
+  const balByAcc = _accountBalances(data);
+  const viewAll  = activeAcc === 'all';
+  const viewBal  = viewAll ? data.balance : (balByAcc[activeAcc] || 0);
+  const shown    = viewAll
+    ? data.transactions
+    : data.transactions.filter(tx => txAccount(tx) === activeAcc);
 
   // Balance card
   const balEl = document.getElementById('cash-balance');
   if (balEl) {
-    balEl.textContent = fmtTZS(data.balance);
-    balEl.className   = 'cash-bal-amount' + (data.balance < 0 ? ' negative' : '');
+    balEl.textContent = fmtTZS(viewBal);
+    balEl.className   = 'cash-bal-amount' + (viewBal < 0 ? ' negative' : '');
+  }
+  const balLbl = document.querySelector('.cash-bal-label');
+  if (balLbl) {
+    balLbl.textContent = viewAll
+      ? 'TOTAL — ALL ACCOUNTS'
+      : (accs.find(a => a.id === activeAcc)?.label || 'CASH') + ' BALANCE';
   }
 
-  // Today's totals
+  // Today's totals (within current account view)
   const todayStr = new Date().toDateString();
   let todayIn = 0, todayOut = 0;
-  data.transactions.forEach(tx => {
+  shown.forEach(tx => {
     if (new Date(tx.date).toDateString() === todayStr) {
       if (tx.type === 'credit') todayIn  += tx.amount;
       else                      todayOut += tx.amount;
@@ -153,14 +278,14 @@ function renderCash() {
   const logEl = document.getElementById('cash-log');
   if (!logEl) return;
 
-  if (data.transactions.length === 0) {
+  if (shown.length === 0) {
     logEl.innerHTML = '<div class="loading">NO ENTRIES YET</div>';
     return;
   }
 
   const yesterdayStr = new Date(Date.now() - 86400000).toDateString();
 
-  logEl.innerHTML = data.transactions.map(tx => {
+  logEl.innerHTML = shown.map(tx => {
     const d       = new Date(tx.date);
     const dStr    = d.toDateString();
     const timeStr = d.toTimeString().slice(0, 5);
@@ -171,13 +296,16 @@ function renderCash() {
     const catLbl  = catObj ? catObj.label : tx.category.toUpperCase();
     const display = tx.note || catLbl;
     const sign    = tx.type === 'debit' ? '−' : '+';
+    const accLbl  = viewAll
+      ? (accs.find(a => a.id === txAccount(tx))?.label || txAccount(tx).toUpperCase())
+      : '';
 
     return `
       <div class="cash-tx">
         <div class="cash-tx-cat c-${tx.category}">${catLbl}</div>
         <div class="cash-tx-body">
           <div class="cash-tx-note">${esc(display)}</div>
-          <div class="cash-tx-time">${dateLbl} · ${timeStr}</div>
+          <div class="cash-tx-time">${dateLbl} · ${timeStr}${accLbl ? ` · <span class="cash-tx-acc">${esc(accLbl)}</span>` : ''}</div>
         </div>
         <div class="cash-tx-right">
           <div class="cash-tx-amount ${tx.type}">${sign}${fmtTZS(tx.amount)}</div>
@@ -196,12 +324,13 @@ function exportCashCSV() {
     return;
   }
 
-  const rows = [['Date', 'Time', 'Type', 'Category', 'Note', 'Amount (TZS)', 'Balance After (TZS)']];
+  const rows = [['Date', 'Time', 'Account', 'Type', 'Category', 'Note', 'Amount (TZS)', 'Balance After (TZS)']];
   [...data.transactions].reverse().forEach(tx => {
     const d = new Date(tx.date);
     rows.push([
       d.toLocaleDateString('en-GB'),
       d.toTimeString().slice(0, 5),
+      txAccount(tx).toUpperCase(),
       tx.type.toUpperCase(),
       tx.category.toUpperCase(),
       tx.note || '',
@@ -251,6 +380,31 @@ export function setupCash() {
       document.querySelectorAll('.cash-type-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
     });
+  });
+
+  // Account chips — rendered dynamically; use delegation
+  renderAccountChips();
+  document.addEventListener('click', e => {
+    // × remove an account (blocked if it has transactions)
+    const delAcc = e.target.closest('.acc-chip-del');
+    if (delAcc && delAcc.closest('#cash-accounts')) {
+      e.stopPropagation();
+      removeAccount(delAcc.dataset.delAcc);
+      return;
+    }
+    // ＋ add account
+    if (e.target.closest('#acc-add-toggle')) {
+      const label = prompt('New account name (e.g. NMB BANK, M-PESA):');
+      if (label) addAccount(label);
+      return;
+    }
+    // Select an account chip
+    const accChip = e.target.closest('.cash-acc-chip');
+    if (accChip && accChip.closest('#cash-accounts') && accChip.dataset.acc) {
+      activeAcc = accChip.dataset.acc;
+      renderAccountChips();
+      renderCash();
+    }
   });
 
   // Category chips — rendered dynamically; use delegation
