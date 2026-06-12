@@ -25,6 +25,7 @@ import { initSync, setupSyncSettings }   from './modules/sync.js';
 import { setupWidgets, renderDashCash }  from './modules/widgets.js';
 import { setupBudget, renderBudget }     from './modules/budget.js';
 import { setupImport }                   from './modules/import.js';
+import { initBoot }                      from './modules/boot.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
@@ -40,6 +41,7 @@ bus.on('route:changed', ({ viewId }) => {
 
 // ── Boot sequence ─────────────────────────────────────────────
 // Type="module" scripts are deferred — DOM is always ready here.
+initBoot();         // boot animation overlay (once per session, sits above lock)
 initTheme();        // apply saved theme before first paint
 initLock();         // show lock overlay immediately if enabled (must run early)
 setupLockSettings();// wire settings-page lock controls

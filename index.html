@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v20';
+  var K='jv_bust_v21';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=21">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -732,6 +732,25 @@
       <span class="bnav-label">SETTINGS</span>
     </div>
   </nav>
+
+  <!-- ── Boot Animation Overlay ──────────────────────────────────── -->
+  <div class="boot-overlay" id="boot-overlay">
+    <div class="boot-stage">
+      <div class="boot-ring">
+        <div class="boot-ring-outer"></div>
+        <div class="boot-ring-mid"></div>
+        <div class="boot-core"></div>
+      </div>
+      <div class="boot-brand">JARVIS</div>
+      <div class="boot-lines">
+        <div class="boot-line" style="animation-delay:0.5s">▸ CORE SYSTEMS <span class="boot-dots">··········</span> <b>ONLINE</b></div>
+        <div class="boot-line" style="animation-delay:0.9s">▸ FINANCE MODULES <span class="boot-dots">·······</span> <b>ONLINE</b></div>
+        <div class="boot-line" style="animation-delay:1.3s">▸ VOICE INTERFACE <span class="boot-dots">·······</span> <b>READY</b></div>
+        <div class="boot-line boot-line-final" style="animation-delay:1.8s">ALL SYSTEMS NOMINAL — KARIBU, SAIF</div>
+      </div>
+      <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+    </div>
+  </div>
 
   <!-- ── App Lock Overlay ─────────────────────────────────────────── -->
   <div class="lock-overlay" id="lock-overlay">
