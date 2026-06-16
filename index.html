@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v21';
+  var K='jv_bust_v22';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=21">
+<link rel="stylesheet" href="style.css?v=22">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -96,6 +96,7 @@
       <div class="nav-item" data-view="reminders"><span class="nav-icon">◎</span> Reminders <span class="nav-badge" id="badge-reminders"></span></div>
       <div class="nav-item" data-view="news"><span class="nav-icon">▦</span> News Feed</div>
       <div class="nav-item" data-view="calendar"><span class="nav-icon">◷</span> Calendar</div>
+      <div class="nav-item" data-view="decisions"><span class="nav-icon">⚖</span> Decisions</div>
       <div class="nav-item" data-view="cash"><span class="nav-icon">◉</span> Cash</div>
       <div class="nav-item" data-view="budget"><span class="nav-icon">◧</span> Budget</div>
       <div class="nav-item" data-view="tools"><span class="nav-icon">⊞</span> Tools</div>
@@ -224,6 +225,28 @@
         </div>
 
       </div><!-- /view-news -->
+
+      <!-- ▸ DECISIONS ──────────────────────────────────────────── -->
+      <div id="view-decisions" class="view">
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">DECISIONS</div>
+            <button class="btn-pill btn-sm" id="dec-add-btn">+ NEW DECISION</button>
+          </div>
+
+          <div id="dec-add-form" class="hidden" style="padding:14px 0 4px">
+            <input id="dec-title-input" class="task-input" placeholder="What's the decision?" maxlength="120" style="width:100%;margin-bottom:10px">
+            <div style="display:flex;gap:8px">
+              <button class="btn-pill btn-sm" id="dec-save-btn">SAVE</button>
+              <button class="btn-pill btn-sm btn-ghost" id="dec-cancel-btn">CANCEL</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="dec-list"></div>
+
+      </div><!-- /view-decisions -->
 
       <!-- ▸ INBOX (stub) ─────────────────────────────────────── -->
       <div id="view-inbox" class="view">
@@ -698,38 +721,73 @@
   </div>
   <!-- ── Bottom Nav (mobile only) ───────────────────────────── -->
   <nav class="bottom-nav">
+    <!-- HOME -->
     <div class="bnav-item active" data-view="dashboard">
       <span class="bnav-icon">⬡</span>
       <span class="bnav-label">HOME</span>
     </div>
-    <div class="bnav-item" data-view="reminders">
-      <span class="bnav-icon">◎</span>
-      <span class="bnav-label">TASKS</span>
-      <span class="bnav-badge" id="bnav-badge-reminders"></span>
+
+    <!-- DAILY group -->
+    <div class="bnav-group" data-group="daily">
+      <div class="bnav-group-face">
+        <span class="bnav-icon">✦</span>
+        <span class="bnav-label">DAILY</span>
+      </div>
+      <div class="bnav-sub">
+        <div class="bnav-sub-item" data-view="reminders">
+          <span class="bnav-icon">◎</span>
+          <span class="bnav-label">TASKS</span>
+          <span class="bnav-badge" id="bnav-badge-reminders"></span>
+        </div>
+        <div class="bnav-sub-item" data-view="calendar">
+          <span class="bnav-icon">◷</span>
+          <span class="bnav-label">CALENDAR</span>
+        </div>
+        <div class="bnav-sub-item" data-view="news">
+          <span class="bnav-icon">▦</span>
+          <span class="bnav-label">NEWS</span>
+        </div>
+        <div class="bnav-sub-item" data-view="decisions">
+          <span class="bnav-icon">⚖</span>
+          <span class="bnav-label">DECISIONS</span>
+        </div>
+      </div>
     </div>
-    <div class="bnav-item" data-view="calendar">
-      <span class="bnav-icon">◷</span>
-      <span class="bnav-label">CALENDAR</span>
+
+    <!-- FINANCE group -->
+    <div class="bnav-group" data-group="finance">
+      <div class="bnav-group-face">
+        <span class="bnav-icon">◉</span>
+        <span class="bnav-label">FINANCE</span>
+      </div>
+      <div class="bnav-sub">
+        <div class="bnav-sub-item" data-view="cash">
+          <span class="bnav-icon">◉</span>
+          <span class="bnav-label">CASH</span>
+        </div>
+        <div class="bnav-sub-item" data-view="budget">
+          <span class="bnav-icon">◧</span>
+          <span class="bnav-label">BUDGET</span>
+        </div>
+      </div>
     </div>
-    <div class="bnav-item" data-view="news">
-      <span class="bnav-icon">▦</span>
-      <span class="bnav-label">NEWS</span>
-    </div>
-    <div class="bnav-item" data-view="cash">
-      <span class="bnav-icon">◉</span>
-      <span class="bnav-label">CASH</span>
-    </div>
-    <div class="bnav-item" data-view="budget">
-      <span class="bnav-icon">◧</span>
-      <span class="bnav-label">BUDGET</span>
-    </div>
-    <div class="bnav-item" data-view="tools">
-      <span class="bnav-icon">⊞</span>
-      <span class="bnav-label">TOOLS</span>
-    </div>
-    <div class="bnav-item" data-view="settings">
-      <span class="bnav-icon">⚙</span>
-      <span class="bnav-label">SETTINGS</span>
+
+    <!-- TOOLS group -->
+    <div class="bnav-group" data-group="tools">
+      <div class="bnav-group-face">
+        <span class="bnav-icon">⊞</span>
+        <span class="bnav-label">TOOLS</span>
+      </div>
+      <div class="bnav-sub">
+        <div class="bnav-sub-item" data-view="tools">
+          <span class="bnav-icon">⊞</span>
+          <span class="bnav-label">TOOLS</span>
+        </div>
+        <div class="bnav-sub-item" data-view="settings">
+          <span class="bnav-icon">⚙</span>
+          <span class="bnav-label">SETTINGS</span>
+        </div>
+      </div>
     </div>
   </nav>
 

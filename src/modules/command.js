@@ -30,6 +30,8 @@ const CMDS = [
     run: ()  => { navigate('tools');     return '→ TOOLS';      } },
   { re: /^(go\s+)?(budget|bajeti)$/i,
     run: ()  => { navigate('budget');    return '→ BUDGET';     } },
+  { re: /^(go\s+)?(decisions?|pros?|maamuzi)$/i,
+    run: ()  => { navigate('decisions'); return '→ DECISIONS';  } },
 
   // ── Task: "task Buy milk" / "task Buy milk at 14:00" ──────────
   { re: /^(?:add\s+)?task\s+(.+?)(?:\s+at\s+(\d{1,2}:\d{2}))?$/i,

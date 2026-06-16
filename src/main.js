@@ -26,6 +26,7 @@ import { setupWidgets, renderDashCash }  from './modules/widgets.js';
 import { setupBudget, renderBudget }     from './modules/budget.js';
 import { setupImport }                   from './modules/import.js';
 import { initBoot }                      from './modules/boot.js';
+import { setupDecisions, renderDecisions } from './modules/decisions.js';
 
 // ── Route-change reactions ─────────────────────────────────────
 // Modules don't know about the router; the bus decouples them.
@@ -36,6 +37,7 @@ bus.on('route:changed', ({ viewId }) => {
   if (viewId === 'calendar')  { initCalendar(); renderGCalStatus(); }
   if (viewId === 'cash')      { initCash(); renderExpenseCharts(); }
   if (viewId === 'budget')    renderBudget();
+  if (viewId === 'decisions') renderDecisions();
   if (viewId === 'tools')     onEnterTools();
 });
 
@@ -60,6 +62,7 @@ initSync();         // render sync status, start periodic auto-backup
 setupSyncSettings();// wire settings-page sync controls
 setupWidgets();     // apply dashboard widget order/visibility, wire settings
 setupBudget();      // wire budget view delegation + auto-save
+setupDecisions();   // wire decisions add form + pro/con delegation
 setupImport();      // wire statement-import file picker + wizard
 initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt

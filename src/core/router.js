@@ -20,10 +20,13 @@ export function navigate(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + viewId).classList.add('active');
 
-  // Highlight sidebar + bottom-nav items
-  document.querySelectorAll('.nav-item[data-view], .bnav-item[data-view]').forEach(n => {
+  // Highlight sidebar + bottom-nav items (including group sub-items)
+  document.querySelectorAll('.nav-item[data-view], .bnav-item[data-view], .bnav-sub-item[data-view]').forEach(n => {
     n.classList.toggle('active', n.dataset.view === viewId);
   });
+
+  // Close any open bottom-nav groups
+  document.querySelectorAll('.bnav-group.open').forEach(g => g.classList.remove('open'));
 
   // Scroll center panel back to top on view change
   document.querySelector('.center').scrollTop = 0;
@@ -47,6 +50,22 @@ export function getCurrentView() {
  */
 export function initRouter() {
   document.addEventListener('click', e => {
+    // Bottom-nav group face: toggle sub-menu open/close
+    const groupFace = e.target.closest('.bnav-group-face');
+    if (groupFace) {
+      const group = groupFace.closest('.bnav-group');
+      const isOpen = group.classList.contains('open');
+      // Close all groups first
+      document.querySelectorAll('.bnav-group.open').forEach(g => g.classList.remove('open'));
+      if (!isOpen) group.classList.add('open');
+      return;
+    }
+
+    // Close groups when clicking anywhere outside them
+    if (!e.target.closest('.bnav-group')) {
+      document.querySelectorAll('.bnav-group.open').forEach(g => g.classList.remove('open'));
+    }
+
     const el = e.target.closest('[data-view]');
     if (!el) return;
     const viewId = el.dataset.view;
