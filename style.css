@@ -1225,10 +1225,27 @@ body::after {
 
 }
 
+/* ── Pill buttons (shared utility) ──────────────────────────── */
+.btn-pill {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  padding: 7px 16px; border-radius: 999px; cursor: pointer;
+  background: rgba(45,214,255,0.08);
+  border: 1px solid rgba(45,214,255,0.28);
+  color: var(--accent);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn-pill:hover { background: rgba(45,214,255,0.16); border-color: rgba(45,214,255,0.55); }
+.btn-pill.btn-sm { font-size: 9px; padding: 5px 12px; letter-spacing: 0.1em; }
+.btn-pill.btn-ghost {
+  background: none; border-color: rgba(255,255,255,0.14); color: var(--muted);
+}
+.btn-pill.btn-ghost:hover { border-color: rgba(255,255,255,0.35); color: var(--text); }
+
 /* ═══════════════════════════════════════════════════════════════
    DECISIONS VIEW
 ═══════════════════════════════════════════════════════════════ */
-.dec-card { margin-bottom: 16px; }
+.dec-card { margin-bottom: 16px; padding: 16px; }
 
 .dec-card-head {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;

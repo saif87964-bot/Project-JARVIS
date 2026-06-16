@@ -3,7 +3,7 @@ const CACHE = 'jarvis-v25';
 const SHELL = [
   '/',
   '/index.html',
-  '/style.css?v=22',
+  '/style.css?v=23',
   '/src/main.js',
   '/src/config.js',
   '/src/utils.js',
@@ -39,7 +39,7 @@ const SHELL = [
 // All JS modules and CSS use network-first so deploys are immediately visible.
 const NETWORK_FIRST = new Set([
   '/', '/index.html',
-  '/style.css', '/style.css?v=21', '/style.css?v=22',
+  '/style.css', '/style.css?v=21', '/style.css?v=22', '/style.css?v=23',
   '/src/main.js', '/src/config.js', '/src/utils.js',
   '/src/core/router.js', '/src/core/storage.js', '/src/core/bus.js', '/src/core/pwa.js',
   '/src/modules/clock.js', '/src/modules/tasks.js', '/src/modules/calendar.js',
