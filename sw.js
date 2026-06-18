@@ -1,4 +1,4 @@
-const CACHE = 'jarvis-v27';
+const CACHE = 'jarvis-v29';
 
 const SHELL = [
   '/',

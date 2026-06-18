@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v25';
+  var K='jv_bust_v27';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -137,22 +137,6 @@
             <div class="gstat"><div class="gstat-num">7</div><div class="gstat-label">UNREAD EMAILS</div></div>
             <div class="gstat"><div class="gstat-num" id="gs-meetings">—</div><div class="gstat-label">MEETINGS</div></div>
             <div class="gstat"><div class="gstat-num" id="gs-news">—</div><div class="gstat-label">NEWS ITEMS</div></div>
-          </div>
-        </div>
-
-        <!-- Voice dictation widget -->
-        <div class="card voice-widget" id="dash-voice-widget">
-          <div class="voice-widget-inner">
-            <button class="voice-widget-btn" id="dash-mic-btn" aria-label="Start dictation">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="2" width="6" height="12" rx="3"/>
-                <path d="M5 10a7 7 0 0 0 14 0"/>
-                <line x1="12" y1="19" x2="12" y2="22"/>
-                <line x1="8" y1="22" x2="16" y2="22"/>
-              </svg>
-            </button>
-            <div class="voice-widget-status" id="dash-voice-status">TAP TO DICTATE</div>
-            <div class="voice-widget-transcript" id="dash-voice-transcript"></div>
           </div>
         </div>
 
@@ -775,6 +759,7 @@
     <div class="bnav-sub-label" id="bnav-sub-label"></div>
     <div class="bnav-sub-grid" id="bnav-sub-grid"></div>
   </div>
+
 
   <!-- ── Boot Animation Overlay ──────────────────────────────────── -->
   <div class="boot-overlay" id="boot-overlay">

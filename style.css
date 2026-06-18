@@ -1277,64 +1277,6 @@ body::after {
 }
 .btn-pill.btn-ghost:hover { border-color: rgba(255,255,255,0.35); color: var(--text); }
 
-/* ═══════════════════════════════════════════════════════════════
-   VOICE WIDGET
-═══════════════════════════════════════════════════════════════ */
-@keyframes micPulse {
-  0%, 100% { transform: scale(1); opacity: 0.45; }
-  50%       { transform: scale(1.45); opacity: 0; }
-}
-
-.voice-widget { padding: 22px 16px; }
-
-.voice-widget-inner {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 12px;
-}
-
-.voice-widget-btn {
-  width: 68px; height: 68px; border-radius: 50%;
-  background: linear-gradient(135deg, rgba(45,214,255,0.12), rgba(45,214,255,0.05));
-  border: 1.5px solid rgba(45,214,255,0.32);
-  color: var(--accent);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; flex-shrink: 0;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-}
-.voice-widget-btn::before {
-  content: '';
-  position: absolute; inset: -10px; border-radius: 50%;
-  border: 1.5px solid rgba(45,214,255,0.22);
-  pointer-events: none;
-}
-.voice-widget-btn:active {
-  background: linear-gradient(135deg, rgba(45,214,255,0.2), rgba(45,214,255,0.1));
-}
-.voice-widget-btn.listening {
-  background: linear-gradient(135deg, rgba(45,214,255,0.25), rgba(45,214,255,0.12));
-  border-color: var(--accent);
-  box-shadow: 0 0 28px rgba(45,214,255,0.35), 0 0 60px rgba(45,214,255,0.1);
-  color: #fff;
-}
-.voice-widget-btn.listening::before {
-  animation: micPulse 1.4s ease-in-out infinite;
-}
-
-.voice-widget-status {
-  font-family: var(--font-mono);
-  font-size: 9px; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--muted);
-  transition: color 0.2s;
-}
-.voice-widget.active .voice-widget-status { color: var(--accent); }
-
-.voice-widget-transcript {
-  font-size: 13px; color: var(--text);
-  text-align: center; min-height: 18px;
-  line-height: 1.45; opacity: 0.85;
-  max-width: 260px;
-}
 
 /* ═══════════════════════════════════════════════════════════════
    DECISIONS VIEW
