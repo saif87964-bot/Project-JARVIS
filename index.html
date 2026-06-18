@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v22';
+  var K='jv_bust_v25';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=23">
+<link rel="stylesheet" href="style.css?v=24">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -36,7 +36,7 @@
   /* Command bar: fixed full-width above bottom nav */
   .command-bar {
     position: fixed !important;
-    bottom: 56px !important; left: 0 !important; right: 0 !important;
+    bottom: 72px !important; left: 0 !important; right: 0 !important;
     width: auto !important;
     z-index: 150 !important;
     background: rgba(5,9,15,0.94) !important;
@@ -137,6 +137,22 @@
             <div class="gstat"><div class="gstat-num">7</div><div class="gstat-label">UNREAD EMAILS</div></div>
             <div class="gstat"><div class="gstat-num" id="gs-meetings">—</div><div class="gstat-label">MEETINGS</div></div>
             <div class="gstat"><div class="gstat-num" id="gs-news">—</div><div class="gstat-label">NEWS ITEMS</div></div>
+          </div>
+        </div>
+
+        <!-- Voice dictation widget -->
+        <div class="card voice-widget" id="dash-voice-widget">
+          <div class="voice-widget-inner">
+            <button class="voice-widget-btn" id="dash-mic-btn" aria-label="Start dictation">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="2" width="6" height="12" rx="3"/>
+                <path d="M5 10a7 7 0 0 0 14 0"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="8" y1="22" x2="16" y2="22"/>
+              </svg>
+            </button>
+            <div class="voice-widget-status" id="dash-voice-status">TAP TO DICTATE</div>
+            <div class="voice-widget-transcript" id="dash-voice-transcript"></div>
           </div>
         </div>
 
@@ -723,73 +739,42 @@
   <nav class="bottom-nav">
     <!-- HOME -->
     <div class="bnav-item active" data-view="dashboard">
-      <span class="bnav-icon">⬡</span>
+      <div class="bnav-item-bar"></div>
+      <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>
       <span class="bnav-label">HOME</span>
     </div>
-
     <!-- DAILY group -->
-    <div class="bnav-group" data-group="daily">
+    <div class="bnav-group" data-group="DAILY">
       <div class="bnav-group-face">
-        <span class="bnav-icon">✦</span>
+        <div class="bnav-item-bar"></div>
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>
         <span class="bnav-label">DAILY</span>
       </div>
-      <div class="bnav-sub">
-        <div class="bnav-sub-item" data-view="reminders">
-          <span class="bnav-icon">◎</span>
-          <span class="bnav-label">TASKS</span>
-          <span class="bnav-badge" id="bnav-badge-reminders"></span>
-        </div>
-        <div class="bnav-sub-item" data-view="calendar">
-          <span class="bnav-icon">◷</span>
-          <span class="bnav-label">CALENDAR</span>
-        </div>
-        <div class="bnav-sub-item" data-view="news">
-          <span class="bnav-icon">▦</span>
-          <span class="bnav-label">NEWS</span>
-        </div>
-        <div class="bnav-sub-item" data-view="decisions">
-          <span class="bnav-icon">⚖</span>
-          <span class="bnav-label">DECISIONS</span>
-        </div>
-      </div>
     </div>
-
     <!-- FINANCE group -->
-    <div class="bnav-group" data-group="finance">
+    <div class="bnav-group" data-group="FINANCE">
       <div class="bnav-group-face">
-        <span class="bnav-icon">◉</span>
+        <div class="bnav-item-bar"></div>
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12.5h2"/><path d="M3 10h18"/></svg>
         <span class="bnav-label">FINANCE</span>
       </div>
-      <div class="bnav-sub">
-        <div class="bnav-sub-item" data-view="cash">
-          <span class="bnav-icon">◉</span>
-          <span class="bnav-label">CASH</span>
-        </div>
-        <div class="bnav-sub-item" data-view="budget">
-          <span class="bnav-icon">◧</span>
-          <span class="bnav-label">BUDGET</span>
-        </div>
-      </div>
     </div>
-
     <!-- TOOLS group -->
-    <div class="bnav-group" data-group="tools">
+    <div class="bnav-group" data-group="TOOLS">
       <div class="bnav-group-face">
-        <span class="bnav-icon">⊞</span>
+        <div class="bnav-item-bar"></div>
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"/><circle cx="18" cy="6" r="2"/><path d="M10 12h10"/><circle cx="6" cy="12" r="2"/><path d="M4 18h10"/><circle cx="18" cy="18" r="2"/></svg>
         <span class="bnav-label">TOOLS</span>
-      </div>
-      <div class="bnav-sub">
-        <div class="bnav-sub-item" data-view="tools">
-          <span class="bnav-icon">⊞</span>
-          <span class="bnav-label">TOOLS</span>
-        </div>
-        <div class="bnav-sub-item" data-view="settings">
-          <span class="bnav-icon">⚙</span>
-          <span class="bnav-label">SETTINGS</span>
-        </div>
       </div>
     </div>
   </nav>
+
+  <!-- Global sub-menu bottom sheet (populated by router.js) -->
+  <div id="bnav-backdrop"></div>
+  <div id="bnav-submenu" aria-hidden="true">
+    <div class="bnav-sub-label" id="bnav-sub-label"></div>
+    <div class="bnav-sub-grid" id="bnav-sub-grid"></div>
+  </div>
 
   <!-- ── Boot Animation Overlay ──────────────────────────────────── -->
   <div class="boot-overlay" id="boot-overlay">
@@ -849,7 +834,7 @@
         <div class="loading">LOADING BRIEFING...</div>
       </div>
       <div class="briefing-footer">
-        <button class="briefing-dismiss" id="briefing-close-btn">DISMISS</button>
+        <button class="briefing-close-btn" id="briefing-close-btn">ENTER JARVIS →</button>
       </div>
     </div>
   </div>

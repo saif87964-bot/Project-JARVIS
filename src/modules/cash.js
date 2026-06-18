@@ -301,7 +301,7 @@ function renderCash() {
       : '';
 
     return `
-      <div class="cash-tx">
+      <div class="cash-tx ${tx.type}">
         <div class="cash-tx-cat c-${tx.category}">${catLbl}</div>
         <div class="cash-tx-body">
           <div class="cash-tx-note">${esc(display)}</div>

@@ -55,13 +55,18 @@ let _active     = false;
 // ── Public ─────────────────────────────────────────────────────
 
 export function initVoice() {
-  const btn = document.getElementById('voice-btn');
-  if (!btn) return;
+  const btn     = document.getElementById('voice-btn');
+  const dashBtn = document.getElementById('dash-mic-btn');
 
-  if (!SR) { btn.style.display = 'none'; return; }
+  if (!SR) {
+    if (btn) btn.style.display = 'none';
+    const w = document.getElementById('dash-voice-widget');
+    if (w) w.style.display = 'none';
+    return;
+  }
 
-  btn.style.display = 'inline-flex';
-  btn.addEventListener('click', _toggle);
+  if (btn) { btn.style.display = 'inline-flex'; btn.addEventListener('click', _toggle); }
+  if (dashBtn) dashBtn.addEventListener('click', _toggle);
 }
 
 export function setupVoiceSettings() {
@@ -87,34 +92,65 @@ function _toggle() {
   _active ? recognition?.stop() : _start();
 }
 
+function _setDashStatus(text, isListening) {
+  const status  = document.getElementById('dash-voice-status');
+  const dashBtn = document.getElementById('dash-mic-btn');
+  const widget  = document.getElementById('dash-voice-widget');
+  if (status)  status.textContent = text;
+  if (dashBtn) dashBtn.classList.toggle('listening', isListening);
+  if (widget)  widget.classList.toggle('active', isListening);
+}
+
+function _setDashTranscript(text) {
+  const el = document.getElementById('dash-voice-transcript');
+  if (el) el.textContent = text;
+}
+
 function _start() {
   const btn = document.getElementById('voice-btn');
-  recognition                  = new SR();
-  recognition.lang             = storage.get(LANG_KEY, 'en-US');
-  recognition.interimResults   = false;
-  recognition.maxAlternatives  = 1;
-  recognition.continuous       = false;
+  recognition                 = new SR();
+  recognition.lang            = storage.get(LANG_KEY, 'en-US');
+  recognition.interimResults  = true;
+  recognition.maxAlternatives = 1;
+  recognition.continuous      = false;
 
   recognition.onstart = () => {
     _active = true;
     btn?.classList.add('listening');
-    _respond(recognition.lang === 'sw-TZ' ? 'NASIKILIZA…' : 'LISTENING…', false);
+    const label = recognition.lang === 'sw-TZ' ? 'NASIKILIZA…' : 'LISTENING…';
+    _respond(label, false);
+    _setDashStatus(label, true);
+    _setDashTranscript('');
   };
 
   recognition.onresult = e => {
-    const text = e.results[0][0].transcript.trim();
-    _respond('HEARD: ' + text.toUpperCase(), false);
-    _parseAndExecute(text);
+    const result   = e.results[0];
+    const text     = result[0].transcript.trim();
+    const isFinal  = result.isFinal;
+    _setDashTranscript(text);
+    if (isFinal) {
+      _respond('HEARD: ' + text.toUpperCase(), false);
+      _parseAndExecute(text);
+    }
   };
 
   recognition.onerror = e => {
-    if (e.error === 'no-speech') { _respond('NO SPEECH DETECTED', true); return; }
-    if (e.error !== 'aborted')   _respond('MIC ERROR: ' + e.error.toUpperCase(), true);
+    if (e.error === 'no-speech') {
+      _respond('NO SPEECH DETECTED', true);
+      _setDashStatus('NO SPEECH — TRY AGAIN', false);
+      _setDashTranscript('');
+      return;
+    }
+    if (e.error !== 'aborted') {
+      _respond('MIC ERROR: ' + e.error.toUpperCase(), true);
+      _setDashStatus('MIC ERROR', false);
+    }
   };
 
   recognition.onend = () => {
     _active = false;
     btn?.classList.remove('listening');
+    _setDashStatus('TAP TO DICTATE', false);
   };
 
   recognition.start();
