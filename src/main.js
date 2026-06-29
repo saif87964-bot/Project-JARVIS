@@ -67,3 +67,16 @@ setupImport();      // wire statement-import file picker + wizard
 initBriefing();     // auto-open daily briefing, wire close, listen for bus event
 initPwa();          // SW registration + install prompt
 initRouter();       // LAST — wires nav delegation + restores hash (fires route hooks)
+
+// Arc reactor tap interaction
+const _reactor = document.getElementById('arc-reactor');
+if (_reactor) {
+  _reactor.addEventListener('pointerdown', () => {
+    _reactor.classList.add('tapped');
+    const ripple = document.createElement('div');
+    ripple.className = 'arc-ripple';
+    _reactor.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+    setTimeout(() => _reactor.classList.remove('tapped'), 1400);
+  });
+}

@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v28';
+  var K='jv_bust_v29';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -53,9 +53,6 @@
 <title>JARVIS — Daily Dashboard</title>
 </head>
 <body>
-<!-- Global HUD scan line -->
-<div class="hud-scan" aria-hidden="true"></div>
-
 <div class="app">
 
   <!-- ── Install prompt ──────────────────────────────────────── -->
