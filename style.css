@@ -2884,6 +2884,205 @@ body::after {
   100% { width: 100%; }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   UI PRO MAX — ROUND 2
+   Data readouts · HUD controls · Status breath · Scrollbars ·
+   Loading shimmer · Card-action glow · Briefing backdrop
+═══════════════════════════════════════════════════════════════ */
+
+/* Shared new keyframes */
+@keyframes statusBreath {
+  0%,100% { box-shadow: none; opacity: 0.85; }
+  50%     { box-shadow: 0 0 10px -2px currentColor; opacity: 1; }
+}
+@keyframes hudShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes blinkCursor {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0; }
+}
+@keyframes statCountPulse {
+  0%,100% { text-shadow: 0 0 16px rgba(45,214,255,0.5); }
+  50%     { text-shadow: 0 0 28px rgba(45,214,255,0.95), 0 0 50px rgba(45,214,255,0.4); }
+}
+
+/* ── 1. Holographic data readout numbers ─────────────────────── */
+.gstat-num {
+  font-family: var(--font-disp);
+  font-size: 26px; font-weight: 700;
+  color: var(--accent);
+  animation: statCountPulse 3s ease-in-out infinite;
+  letter-spacing: 0.04em;
+}
+.gstat {
+  position: relative;
+  padding-bottom: 6px;
+}
+.gstat::after {
+  content: '';
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 24px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 6px rgba(45,214,255,0.6);
+}
+.gstat-label {
+  font-size: 7.5px;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── 2. HUD-style form inputs (global) ───────────────────────── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  border-color: rgba(45,214,255,0.18) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(45,214,255,0.55) !important;
+  box-shadow: 0 0 0 1px rgba(45,214,255,0.2), 0 0 18px -4px rgba(45,214,255,0.45) !important;
+  outline: none !important;
+}
+.task-add-form {
+  background: rgba(4,9,15,0.55);
+  border-bottom: 1px solid rgba(45,214,255,0.1);
+  transition: background 0.2s;
+}
+.task-add-form:focus-within {
+  background: rgba(6,14,26,0.7);
+  border-bottom-color: rgba(45,214,255,0.3);
+  box-shadow: inset 0 -1px 0 rgba(45,214,255,0.3);
+}
+
+/* ── 3. Card-action chips — brighter, with glow ──────────────── */
+.card-action {
+  color: var(--accent);
+  border-color: rgba(45,214,255,0.28);
+  background: rgba(45,214,255,0.06);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  transition: all 0.2s;
+}
+.card-action:hover {
+  border-color: var(--accent);
+  background: rgba(45,214,255,0.14);
+  box-shadow: 0 0 16px -4px rgba(45,214,255,0.5);
+  color: #fff;
+}
+
+/* ── 4. Status pills — breathing glow ───────────────────────── */
+.status-ok {
+  animation: statusBreath 3s ease-in-out infinite;
+  color: var(--accent3);
+}
+.status-warn {
+  animation: statusBreath 2.6s ease-in-out infinite;
+  color: var(--accent2);
+}
+
+/* ── 5. Row-level type glow (news, tasks, cash) ──────────────── */
+.news-item {
+  border-left: 2px solid transparent;
+  transition: border-color 0.2s, background 0.15s;
+}
+.news-item:hover { border-left-color: rgba(45,214,255,0.4); }
+
+.reminder-item {
+  border-left: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+.reminder-item:hover { border-left-color: rgba(45,214,255,0.35); }
+.reminder-item.done  { border-left-color: rgba(52,211,153,0.3); }
+
+/* ── 6. Loading state — HUD shimmer ──────────────────────────── */
+.loading {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(45,214,255,0.06) 40%,
+    rgba(45,214,255,0.12) 50%,
+    rgba(45,214,255,0.06) 60%,
+    transparent 100%
+  );
+  background-size: 200% auto;
+  animation: hudShimmer 1.8s linear infinite;
+  border-radius: var(--radius-sm);
+  color: var(--accent) !important;
+  letter-spacing: 0.22em;
+}
+.loading::after {
+  content: '_';
+  display: inline-block;
+  animation: blinkCursor 0.9s step-end infinite;
+  margin-left: 2px;
+}
+
+/* ── 7. Scrollbars — thin neon cyan ──────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: rgba(45,214,255,0.03); }
+::-webkit-scrollbar-thumb {
+  background: rgba(45,214,255,0.28);
+  border-radius: 99px;
+  box-shadow: 0 0 6px rgba(45,214,255,0.4);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(45,214,255,0.55);
+  box-shadow: 0 0 10px rgba(45,214,255,0.6);
+}
+* { scrollbar-width: thin; scrollbar-color: rgba(45,214,255,0.28) transparent; }
+
+/* ── 8. Card title — sharper HUD section header ──────────────── */
+.card-title {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: 0 0 16px rgba(45,214,255,0.55);
+}
+
+/* ── 9. Briefing modal — more dramatic backdrop ──────────────── */
+.briefing-overlay {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(45,214,255,0.06), transparent 70%),
+    rgba(2,5,9,0.88);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+.briefing-modal {
+  border-color: rgba(45,214,255,0.32);
+  box-shadow:
+    0 0 0 1px rgba(45,214,255,0.1),
+    0 0 60px -16px rgba(45,214,255,0.45),
+    0 32px 80px -24px rgba(0,0,0,0.95);
+}
+
+/* ── 10. btn-pill — HUD button style ────────────────────────── */
+.btn-pill {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 10px;
+  border: 1px solid rgba(45,214,255,0.3);
+  background: rgba(45,214,255,0.08);
+  color: var(--accent);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-pill:hover {
+  background: rgba(45,214,255,0.16);
+  border-color: rgba(45,214,255,0.6);
+  box-shadow: 0 0 18px -4px rgba(45,214,255,0.45);
+  color: #fff;
+}
+.btn-pill:active { transform: scale(0.97); }
+
 /* ── Reduced motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
