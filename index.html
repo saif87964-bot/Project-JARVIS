@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v33';
+  var K='jv_bust_v34';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=26">
+<link rel="stylesheet" href="style.css?v=27">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -357,6 +357,8 @@
               <button class="cash-type-btn" data-type="credit">+ TOP UP</button>
             </div>
           </div>
+          <!-- Envelope chips (from this month's budget FLOAT rows) — rendered by cash.js -->
+          <div class="cash-envs" id="cash-envs"></div>
           <!-- Category chips — rendered dynamically by cash.js -->
           <div class="cash-cats" id="cash-cats"></div>
           <!-- Add category row (hidden until ＋ NEW is clicked) -->
@@ -442,6 +444,18 @@
         </div>
 
       </div><!-- /view-budget -->
+
+      <!-- ▸ WEALTH ─────────────────────────────────────────────── -->
+      <div id="view-wealth" class="view">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">WEALTH</div>
+          </div>
+        </div>
+        <div id="wealth-body" class="budget-body">
+          <div class="card"><div class="loading">LOADING...</div></div>
+        </div>
+      </div><!-- /view-wealth -->
 
       <!-- ▸ TOOLS ──────────────────────────────────────────────── -->
       <div id="view-tools" class="view">

@@ -57,6 +57,30 @@ let viewKey = _monthKey(new Date());   // cycle currently shown, 'YYYY-MM'
 function _getState()    { return storage.get(BUDGET_KEY, { cycles: {} }); }
 function _saveState(st) { storage.set(BUDGET_KEY, st); bus.emit('sync:trigger'); }
 
+// Attach stable ids to float rows lacking one (envelope binding)
+function _ensureFloatIds(cycle) {
+  if (!cycle || !cycle.float) return false;
+  let changed = false;
+  cycle.float.forEach(f => {
+    if (!f.id) {
+      f.id = 'env' + Math.random().toString(36).slice(2, 9);
+      changed = true;
+    }
+  });
+  return changed;
+}
+
+// Public: current cycle's float rows as envelopes, or [] if no cycle.
+// Consumed by cash.js to render envelope chips.
+export function getCurrentEnvelopes() {
+  const key = _monthKey(new Date());
+  const state = _getState();
+  const cycle = state.cycles[key];
+  if (!cycle || !cycle.float) return [];
+  if (_ensureFloatIds(cycle)) _saveState(state);
+  return cycle.float.map(f => ({ id: f.id, label: f.l, target: +f.a || 0 }));
+}
+
 function _monthKey(d)   { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
 
 function _shiftKey(key, delta) {
@@ -176,8 +200,9 @@ function _safeToSpendHero(cycle) {
       return d.getFullYear() === y && d.getMonth() === m - 1;
     })());
 
+  _ensureFloatIds(cycle);
   const floatPlan = _sum(cycle.float);
-  const floatSpent = cycle.float.reduce((s, f) => s + _matchedSpend(f.l, txs), 0);
+  const floatSpent = cycle.float.reduce((s, f) => s + _matchedSpend(f, txs), 0);
   const floatLeft = Math.max(0, floatPlan - floatSpent);
   const perDay = Math.floor(floatLeft / daysLeft);
   const payday = todayKey === viewKey ? `${daysLeft} DAYS TO PAYDAY` : `${daysLeft} DAYS IN CYCLE`;
@@ -415,8 +440,9 @@ function _reviewCard(cycle) {
     });
   const totalOut = txs.reduce((s, t) => s + t.amount, 0);
 
+  _ensureFloatIds(cycle);
   const rows = cycle.float.map(f => {
-    const actual = _matchedSpend(f.l, txs);
+    const actual = _matchedSpend(f, txs);
     const pct    = f.a > 0 ? Math.min(Math.round(actual / f.a * 100), 999) : 0;
     const over   = f.a > 0 && actual > f.a;
     return `
@@ -446,14 +472,20 @@ function _reviewCard(cycle) {
     </div>`;
 }
 
-// Match an allowance label to logged spend: by category id/label
-// keyword, falling back to note text matching.
-function _matchedSpend(label, txs) {
+// Match an allowance to logged spend: exact envelope id first
+// (tagged directly at cash-entry time), then keyword fallback for
+// older transactions that predate envelope tagging.
+function _matchedSpend(env, txs) {
+  const id = typeof env === 'object' ? env.id : null;
+  const label = typeof env === 'object' ? env.l : env;
   const words = label.toLowerCase().split(/\s+/).filter(w => w.length > 3 && w !== 'allowance');
-  if (words.length === 0) return 0;
   return txs.reduce((s, tx) => {
-    const hay = (tx.category + ' ' + (tx.note || '')).toLowerCase();
-    return words.some(w => hay.includes(w)) ? s + tx.amount : s;
+    if (id && tx.envelope === id) return s + tx.amount;
+    if (tx.envelope) return s;                  // already tagged elsewhere — don't double-count
+    if (words.length && words.some(w => (tx.category + ' ' + (tx.note || '')).toLowerCase().includes(w))) {
+      return s + tx.amount;
+    }
+    return s;
   }, 0);
 }
 

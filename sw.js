@@ -1,9 +1,9 @@
-const CACHE = 'jarvis-v35';
+const CACHE = 'jarvis-v36';
 
 const SHELL = [
   '/',
   '/index.html',
-  '/style.css?v=26',
+  '/style.css?v=27',
   '/src/main.js',
   '/src/config.js',
   '/src/utils.js',
@@ -31,6 +31,7 @@ const SHELL = [
   '/src/modules/import.js',
   '/src/modules/boot.js',
   '/src/modules/decisions.js',
+  '/src/modules/wealth.js',
   '/manifest.json',
   '/icon.png',
   '/offline.html',
@@ -39,7 +40,7 @@ const SHELL = [
 // All JS modules and CSS use network-first so deploys are immediately visible.
 const NETWORK_FIRST = new Set([
   '/', '/index.html',
-  '/style.css', '/style.css?v=21', '/style.css?v=22', '/style.css?v=23', '/style.css?v=24', '/style.css?v=25', '/style.css?v=26',
+  '/style.css', '/style.css?v=21', '/style.css?v=22', '/style.css?v=23', '/style.css?v=24', '/style.css?v=25', '/style.css?v=26', '/style.css?v=27',
   '/src/main.js', '/src/config.js', '/src/utils.js',
   '/src/core/router.js', '/src/core/storage.js', '/src/core/bus.js', '/src/core/pwa.js',
   '/src/modules/clock.js', '/src/modules/tasks.js', '/src/modules/calendar.js',
@@ -49,7 +50,7 @@ const NETWORK_FIRST = new Set([
   '/src/modules/charts.js', '/src/modules/gcal.js', '/src/modules/lock.js',
   '/src/modules/voice.js', '/src/modules/sync.js', '/src/modules/widgets.js',
   '/src/modules/budget.js', '/src/modules/import.js', '/src/modules/boot.js',
-  '/src/modules/decisions.js',
+  '/src/modules/decisions.js', '/src/modules/wealth.js',
 ]);
 
 // Install: pre-cache the app shell

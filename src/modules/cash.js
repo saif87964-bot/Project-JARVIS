@@ -8,9 +8,11 @@ import { STORAGE_KEYS, CASH_CATS } from '../config.js';
 import { storage }                  from '../core/storage.js';
 import { bus }                      from '../core/bus.js';
 import { esc, fmtTZS }              from '../utils.js';
+import { getCurrentEnvelopes }      from './budget.js';
 
 let cashTxType = 'debit';
 let cashTxCat  = 'misc';
+let cashTxEnv  = null;    // envelope id (from budget FLOAT rows) or null
 let activeAcc  = 'all';   // 'all' or an account id
 
 // ── Storage ────────────────────────────────────────────────────
@@ -55,6 +57,40 @@ function removeCategory(id) {
   saveCategories(cats);
   if (cashTxCat === id) cashTxCat = cats[0].id;
   renderCategoryChips();
+}
+
+// ── Envelope chips (from budget FLOAT rows this month) ─────────
+function _envSpentThisMonth() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const spent = {};
+  getCashData().transactions.forEach(tx => {
+    if (tx.type !== 'debit' || !tx.envelope) return;
+    const d = new Date(tx.date);
+    if (d.getFullYear() !== y || d.getMonth() !== m) return;
+    spent[tx.envelope] = (spent[tx.envelope] || 0) + tx.amount;
+  });
+  return spent;
+}
+
+function renderEnvelopeChips() {
+  const container = document.getElementById('cash-envs');
+  if (!container) return;
+  const envs = getCurrentEnvelopes();
+  if (envs.length === 0) {
+    container.innerHTML = '<div class="cash-envs-hint">START THIS MONTH’S BUDGET TO SEE ENVELOPES</div>';
+    cashTxEnv = null;
+    return;
+  }
+  if (cashTxEnv && !envs.find(e => e.id === cashTxEnv)) cashTxEnv = null;
+  const spent = _envSpentThisMonth();
+  container.innerHTML = envs.map(e => {
+    const left = Math.max(0, (e.target || 0) - (spent[e.id] || 0));
+    const over = (spent[e.id] || 0) > (e.target || 0) && e.target > 0;
+    return `<button class="cash-env-chip${cashTxEnv === e.id ? ' active' : ''}${over ? ' over' : ''}" data-env="${esc(e.id)}">
+      ${esc(e.label)}<span class="cash-env-left">${e.target ? fmtTZS(left).replace('TZS ', '') : '—'}</span>
+    </button>`;
+  }).join('');
 }
 
 function renderCategoryChips() {
@@ -172,12 +208,13 @@ function recalcCash(data) {
 }
 
 // ── CRUD ───────────────────────────────────────────────────────
-function addCashTx(amount, type, cat, note) {
+function addCashTx(amount, type, cat, note, envelope) {
   const data    = getCashData();
   const account = activeAcc === 'all' ? 'cash' : activeAcc;
   data.transactions.unshift({
     id:           'tx' + Date.now(),
     type, amount, category: cat, account,
+    envelope:     envelope || null,
     note:         note.trim(),
     date:         new Date().toISOString(),
     balanceAfter: 0, // set by recalc
@@ -185,6 +222,7 @@ function addCashTx(amount, type, cat, note) {
   recalcCash(data);
   saveCashData(data);
   renderCash();
+  renderEnvelopeChips();
 }
 
 // ── Bulk import (called from import.js) ────────────────────────
@@ -355,7 +393,7 @@ function submitCashTx() {
   const noteEl = document.getElementById('cash-note-input');
   const amt    = parseFloat(amtEl?.value);
   if (!amt || amt <= 0) { amtEl?.focus(); return; }
-  addCashTx(amt, cashTxType, cashTxCat, noteEl?.value || '');
+  addCashTx(amt, cashTxType, cashTxCat, noteEl?.value || '', cashTxEnv);
   if (amtEl)  amtEl.value  = '';
   if (noteEl) noteEl.value = '';
   amtEl?.focus();
@@ -369,6 +407,7 @@ export function addCashTxVoice(amount, type, category, note) {
 // ── initCash — called on every navigate-to-cash ────────────────
 export function initCash() {
   renderCash();
+  renderEnvelopeChips();
 }
 
 // ── setupCash — call once at app startup ───────────────────────
@@ -406,6 +445,22 @@ export function setupCash() {
       renderCash();
     }
   });
+
+  // Envelope chips — rendered dynamically; use delegation
+  renderEnvelopeChips();
+  document.addEventListener('click', e => {
+    const chip = e.target.closest('.cash-env-chip');
+    if (chip && chip.closest('#cash-envs')) {
+      const id = chip.dataset.env;
+      cashTxEnv = cashTxEnv === id ? null : id;  // tap-again to clear
+      document.querySelectorAll('#cash-envs .cash-env-chip').forEach(c => c.classList.remove('active'));
+      if (cashTxEnv) chip.classList.add('active');
+    }
+  });
+
+  // Refresh envelope chips whenever the budget saves (targets moved,
+  // rows added, etc.) so remaining amounts stay accurate.
+  bus.on('sync:trigger', () => renderEnvelopeChips());
 
   // Category chips — rendered dynamically; use delegation
   renderCategoryChips();

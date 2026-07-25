@@ -12,15 +12,16 @@ const SUB_ICONS = {
   decisions: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14"/><path d="M5 7l-2 6h4zM19 7l-2 6h4z"/></svg>`,
   cash:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>`,
   budget:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M12 3a9 9 0 0 1 9 9h-9z"/></svg>`,
+  wealth:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l3.5-4 3 2.5L20 8"/></svg>`,
   tools:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5 5L4 17v3h3l5.7-5.7a4 4 0 0 0 5-5l-2.5 2.5-2-2z"/></svg>`,
   settings:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.2-1.3L14 2h-4l-.4 2.5a7 7 0 0 0-2.2 1.3l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.2 1.3L10 22h4l.4-2.5a7 7 0 0 0 2.2-1.3l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12z"/></svg>`,
 };
 const GROUP_MAP = {
   DAILY:   [{ view: 'reminders', label: 'Tasks' }, { view: 'calendar', label: 'Calendar' }, { view: 'news', label: 'News' }, { view: 'decisions', label: 'Decisions' }],
-  FINANCE: [{ view: 'cash', label: 'Cash' }, { view: 'budget', label: 'Budget' }],
+  FINANCE: [{ view: 'cash', label: 'Cash' }, { view: 'budget', label: 'Budget' }, { view: 'wealth', label: 'Wealth' }],
   TOOLS:   [{ view: 'tools', label: 'Tools' }, { view: 'settings', label: 'Settings' }],
 };
-const VIEW_GROUP = { reminders:'DAILY', calendar:'DAILY', news:'DAILY', decisions:'DAILY', cash:'FINANCE', budget:'FINANCE', tools:'TOOLS', settings:'TOOLS' };
+const VIEW_GROUP = { reminders:'DAILY', calendar:'DAILY', news:'DAILY', decisions:'DAILY', cash:'FINANCE', budget:'FINANCE', wealth:'FINANCE', tools:'TOOLS', settings:'TOOLS' };
 
 function _closeSubmenu() {
   document.getElementById('bnav-submenu')?.classList.remove('open');
