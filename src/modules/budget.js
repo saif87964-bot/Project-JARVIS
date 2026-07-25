@@ -149,6 +149,7 @@ export function renderBudget() {
   }
 
   host.innerHTML =
+    _safeToSpendHero(cycle) +
     _sectionCard('receipts', 'RECEIPTS', cycle.receipts, { amountCls: 'green' }) +
     _sectionCard('savings',  'PAY YOURSELF FIRST — SAVINGS', cycle.savings, { amountCls: 'cyan' }) +
     _sectionCard('fixed',    'FIXED EXPENSES', cycle.fixed, { paidToggle: true }) +
@@ -156,6 +157,37 @@ export function renderBudget() {
     _summaryCard(cycle) +
     _goalsCard() +
     _reviewCard(cycle);
+}
+
+// Safe-to-spend today = remaining float envelopes / days-to-payday
+// (payday ≈ end of prior calendar month, so cycle ends at month-end of viewKey).
+function _safeToSpendHero(cycle) {
+  const [y, m] = viewKey.split('-').map(Number);
+  const endOfMonth = new Date(y, m, 0);              // last day of viewKey's month
+  const today = new Date();
+  const todayKey = _monthKey(today);
+  const daysLeft = todayKey === viewKey
+    ? Math.max(1, Math.ceil((endOfMonth - today) / 86400000))
+    : Math.ceil((endOfMonth - new Date(y, m - 1, 1)) / 86400000);
+
+  const txs = (storage.get(STORAGE_KEYS.CASH, { transactions: [] }).transactions || [])
+    .filter(tx => tx.type === 'debit' && (() => {
+      const d = new Date(tx.date);
+      return d.getFullYear() === y && d.getMonth() === m - 1;
+    })());
+
+  const floatPlan = _sum(cycle.float);
+  const floatSpent = cycle.float.reduce((s, f) => s + _matchedSpend(f.l, txs), 0);
+  const floatLeft = Math.max(0, floatPlan - floatSpent);
+  const perDay = Math.floor(floatLeft / daysLeft);
+  const payday = todayKey === viewKey ? `${daysLeft} DAYS TO PAYDAY` : `${daysLeft} DAYS IN CYCLE`;
+
+  return `
+    <div class="bgt-safe-hero">
+      <div class="lbl">SAFE TO SPEND TODAY</div>
+      <div class="big"><span class="cur">TZS</span><span>${Math.round(perDay).toLocaleString('en-US')}</span></div>
+      <div class="sub"><b>${fmtTZS(floatLeft)}</b> left across allowances · <b>${payday}</b></div>
+    </div>`;
 }
 
 // ── Cycle creation ─────────────────────────────────────────────
@@ -271,6 +303,7 @@ function _goalsCard() {
     const current = Math.max(0, +g.current || 0);
     const pct     = target > 0 ? Math.min(Math.round(current / target * 100), 100) : 0;
     const done    = target > 0 && current >= target;
+    const eta     = _goalEta(g);
     return `
       <div class="goal-row${done ? ' done' : ''}">
         <div class="goal-head">
@@ -285,6 +318,7 @@ function _goalsCard() {
           </div>
           <span class="goal-progress-val">${fmtTZS(current)} / ${fmtTZS(target)}${target > 0 ? ` — ${pct}%` : ''}</span>
         </div>
+        ${eta ? `<div class="goal-eta">${eta}</div>` : ''}
         <div class="goal-actions">
           <button class="bgt-add-btn" data-goal-contrib="${esc(g.id)}">+ CONTRIBUTE</button>
           ${done ? '<span class="goal-badge">✓ REACHED</span>' : ''}
@@ -300,6 +334,32 @@ function _goalsCard() {
       </div>
       <div class="goal-list">${rows}</div>
     </div>`;
+}
+
+// ETA = "ready · Mon YYYY" or "on track · Mon YYYY", based on the
+// average pay-yourself-first amount across the last 3 cycles as a
+// proxy monthly funding rate. Returns '' if we can't project.
+function _goalEta(g) {
+  const target = Math.max(0, +g.target || 0);
+  const current = Math.max(0, +g.current || 0);
+  if (!target) return '';
+  if (current >= target) return '✓ REACHED';
+
+  const state = _getState();
+  const cycles = Object.entries(state.cycles).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 3);
+  if (!cycles.length) return '';
+  const goals = _getGoals();
+  const goalCount = Math.max(1, goals.length);
+  const avgSavings = cycles.reduce((s, [, c]) => s + _sum(c.savings || []), 0) / cycles.length;
+  const perGoal = avgSavings / goalCount;
+  if (perGoal <= 0) return 'ADD SAVINGS TO PROJECT ETA';
+
+  const monthsNeeded = Math.ceil((target - current) / perGoal);
+  const eta = new Date();
+  eta.setMonth(eta.getMonth() + monthsNeeded);
+  const label = eta.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toUpperCase();
+  const prefix = monthsNeeded <= 3 ? 'READY ·' : 'ON TRACK ·';
+  return `${prefix} ${label}`;
 }
 
 function _addGoal() {

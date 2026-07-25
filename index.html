@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v32';
+  var K='jv_bust_v33';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=25">
+<link rel="stylesheet" href="style.css?v=26">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {
@@ -79,6 +79,7 @@
     <div class="topbar-right">
       <button class="voice-btn" id="voice-btn" style="display:none" title="Voice Command">◎ MIC</button>
       <button class="lock-now-btn" id="lock-now-btn" style="display:none">⊠ LOCK</button>
+      <button class="theme-toggle" id="skin-toggle" title="Switch skin">◈ HUD</button>
       <button class="theme-toggle" id="theme-toggle">◑ DARK</button>
       <span class="status-pill status-ok">GMAIL ● ONLINE</span>
       <span class="status-pill status-ok">NEWS ● LIVE</span>

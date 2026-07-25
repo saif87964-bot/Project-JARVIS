@@ -3148,6 +3148,177 @@ select:focus {
 }
 .btn-pill:active { transform: scale(0.97); }
 
+/* ═══════════════════════════════════════════════════════════════
+   SKIN: MONEY  —  deep navy + gold, wealth-app vibe
+   Ported from the "JARVIS Money" concept artifact.
+   Overrides tokens + neutralises HUD-specific chrome.
+═══════════════════════════════════════════════════════════════ */
+[data-skin="money"] {
+  --bg:      #08111f;
+  --surface: #0f2036;
+  --card:    #101e33;
+  --border:  rgba(200,220,250,0.18);
+  --accent:  #e0b860;                 /* gold */
+  --accent2: #e86b54;                 /* coral over */
+  --accent3: #46b98a;                 /* good green */
+  --text:    #eaf1fc;
+  --muted:   #8598b8;
+  --dim:     #5f7396;
+
+  --radius:    18px;
+  --radius-sm: 12px;
+  --font-mono: "Cascadia Code", "SF Mono", Consolas, "Roboto Mono", ui-monospace, monospace;
+  --font-ui:   "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-disp: "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --card-grad: linear-gradient(150deg, rgba(224,184,96,0.06), rgba(255,255,255,0.02) 60%);
+  --card-shadow: 0 12px 34px -20px rgba(0,0,0,0.75);
+  --glow-cyan: 0 0 24px rgba(224,184,96,0.22);
+  --ring: 0 0 0 3px rgba(224,184,96,0.18);
+}
+
+/* Ambient background — swap cyan radial glows for navy + faint gold */
+[data-skin="money"] body {
+  background:
+    radial-gradient(1100px 700px at 78% -8%, #16345f 0%, rgba(22,52,95,0) 55%),
+    radial-gradient(900px 600px at 6% 108%, #123a52 0%, rgba(18,58,82,0) 52%),
+    var(--bg);
+}
+[data-skin="money"] body::before,
+[data-skin="money"] body::after { display: none; }   /* kill hex + ambient breath */
+
+/* Cards — softer, more rounded, no HUD corner brackets */
+[data-skin="money"] .card {
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(200,220,250,0.11);
+  border-radius: 18px;
+  backdrop-filter: blur(8px);
+}
+[data-skin="money"] .card::before,
+[data-skin="money"] .card::after { display: none !important; }
+[data-skin="money"] .card:hover { box-shadow: 0 12px 34px -20px rgba(0,0,0,0.75); }
+
+/* Titles — tighter, lower-case-friendly, no aggressive tracking */
+[data-skin="money"] .card-title,
+[data-skin="money"] .view-title {
+  font-family: var(--font-ui);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  color: var(--muted);
+  text-shadow: none;
+}
+[data-skin="money"] .view-title { font-size: 18px; letter-spacing: -0.01em; text-transform: none; color: var(--text); }
+
+/* Arc reactor → soft gold coin (rings stop, single glow) */
+[data-skin="money"] .arc-reactor .arc-ring { display: none; }
+[data-skin="money"] .arc-reactor .arc-core {
+  width: 46px; height: 46px;
+  background: radial-gradient(circle at 32% 28%, #e0b860, #c79a3e);
+  box-shadow: 0 0 24px rgba(224,184,96,0.55), inset 0 1px 0 rgba(255,255,255,0.4);
+  animation: none;
+}
+[data-skin="money"] .arc-reactor.tapped .arc-core { transform: scale(1.06); }
+
+/* Bottom nav — glass with gold active state */
+[data-skin="money"] .bottom-nav {
+  background: linear-gradient(180deg, rgba(8,17,31,0.4), rgba(8,17,31,0.96) 42%);
+  border-top: 1px solid rgba(200,220,250,0.11);
+  animation: none;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+}
+[data-skin="money"] .bnav-item.active,
+[data-skin="money"] .bnav-group.group-active .bnav-group-face { color: var(--accent); text-shadow: none; }
+[data-skin="money"] .bnav-item.active .bnav-icon { filter: drop-shadow(0 0 8px rgba(224,184,96,0.55)); }
+
+/* Topbar — no sweep animation, plain */
+[data-skin="money"] .topbar { animation: none; }
+[data-skin="money"] .topbar::after { display: none; }
+
+/* Status pills — muted, no cyan text-shadow */
+[data-skin="money"] .status-pill { animation: none; text-shadow: none; }
+
+/* Inputs — gold focus */
+[data-skin="money"] input:focus,
+[data-skin="money"] textarea:focus,
+[data-skin="money"] select:focus {
+  border-color: rgba(224,184,96,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(224,184,96,0.14) !important;
+}
+
+/* Numbers — use monospace with tabular figures */
+[data-skin="money"] .money,
+[data-skin="money"] .calc-val,
+[data-skin="money"] .gstat-num,
+[data-skin="money"] .bgt-amount-input,
+[data-skin="money"] .bgt-section-total,
+[data-skin="money"] .bgt-rev-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Cash tx rows — softer accent bars */
+[data-skin="money"] .cash-tx.debit  { border-left-color: var(--accent2); }
+[data-skin="money"] .cash-tx.credit { border-left-color: var(--accent3); }
+
+/* Scrollbar — gold */
+[data-skin="money"] ::-webkit-scrollbar-thumb {
+  background: rgba(224,184,96,0.4) !important;
+  box-shadow: 0 0 6px rgba(224,184,96,0.4) !important;
+}
+
+/* Budget envelope bars — reuse existing .bgt-rev-fill classes, gold gradient */
+[data-skin="money"] .bgt-rev-fill { background: linear-gradient(90deg, #2f9d75, var(--accent3)); }
+[data-skin="money"] .bgt-rev-fill.over { background: linear-gradient(90deg, #c94f3c, var(--accent2)); box-shadow: 0 0 8px rgba(232,107,84,0.4); }
+
+/* Goals card — swap gradient to gold */
+[data-skin="money"] .goal-progress-fill { background: linear-gradient(90deg, #c79a3e, #e0b860); box-shadow: 0 0 10px rgba(224,184,96,0.5); }
+
+/* Zero-check banner colours in money skin */
+[data-skin="money"] .bgt-zero-check.balanced { color: var(--accent3); background: rgba(70,185,138,0.08); }
+[data-skin="money"] .bgt-zero-check.under    { color: var(--accent);  background: rgba(224,184,96,0.06); }
+[data-skin="money"] .bgt-zero-check.over     { color: var(--accent2); background: rgba(232,107,84,0.06); text-shadow: none; }
+
+/* Safe-to-spend hero — a new element the budget module renders */
+.bgt-safe-hero {
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(150deg, rgba(45,214,255,0.10), rgba(255,255,255,0.02) 60%);
+  border: 1px solid rgba(45,214,255,0.28);
+  margin-bottom: 14px;
+}
+.bgt-safe-hero .lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+.bgt-safe-hero .big {
+  font-family: var(--font-mono); font-size: 34px; font-weight: 600;
+  letter-spacing: -0.02em; margin-top: 6px;
+  color: var(--text); font-variant-numeric: tabular-nums;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.bgt-safe-hero .big .cur { font-size: 15px; color: var(--accent); font-weight: 600; }
+.bgt-safe-hero .sub { color: var(--muted); font-size: 12px; margin-top: 6px; line-height: 1.5; }
+.bgt-safe-hero .sub b { color: var(--text); font-weight: 600; }
+[data-skin="money"] .bgt-safe-hero {
+  background: linear-gradient(150deg, rgba(224,184,96,0.14), rgba(255,255,255,0.03) 60%);
+  border-color: rgba(224,184,96,0.28);
+}
+
+/* Envelope status text — colour by state */
+.env-status { font-family: var(--font-mono); font-size: 10px; margin-top: 6px; }
+.env-status.good { color: var(--accent3); }
+.env-status.warn { color: #e7b24e; }
+.env-status.over { color: var(--accent2); }
+
+/* Goal ETA line */
+.goal-eta {
+  font-size: 10.5px; color: var(--accent); margin-top: 6px; font-weight: 600;
+  font-family: var(--font-mono); letter-spacing: 0.04em;
+}
+[data-skin="money"] .goal-eta { color: var(--accent); }
+
 /* ── Reduced motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
