@@ -1,11 +1,15 @@
 // ── JARVIS — src/modules/budget.js ────────────────────────────
-// Monthly budget — digital version of Saif's salary-cycle sheet.
-// A cycle = one salary month (salary lands EOM, so cycle ≈ the
-// following calendar month). Each cycle has:
+// Monthly budget — digital version of Saif's salary-cycle sheet,
+// now mirroring the Personal_Budget_System spreadsheet's method:
+// zero-based envelopes + PAY-YOURSELF-FIRST savings taken off the
+// top (not leftover scraps). A cycle = one salary month. Each has:
 //   RECEIPTS         — income sources (asked fresh, prefilled from last)
+//   SAVINGS          — pay-yourself-first, pulled BEFORE any expense
 //   FIXED EXPENSES   — obligations, each with a PAID toggle ("kinda variable")
 //   CASH FLOAT       — set-aside allowances, reviewed vs actuals at EOM
-//   MONEY LEFT       — receipts − fixed − float; user chooses where it goes
+//   UNALLOCATED      — receipts − savings − fixed − float; should trend to 0
+// GOALS is a separate, cross-cycle wealth layer (target/current/progress),
+// the in-app analog of the spreadsheet's Savings & Goals tab.
 // Exports:
 //   setupBudget()  — one-time wiring
 //   renderBudget() — re-render on navigate (route hook)
@@ -16,6 +20,7 @@ import { esc, fmtTZS } from '../utils.js';
 import { STORAGE_KEYS } from '../config.js';
 
 const BUDGET_KEY = 'jv_budget';
+const GOALS_KEY  = 'jv_goals';
 
 // Seeded from the real spreadsheet so the first cycle starts familiar
 const SEED = {
@@ -23,6 +28,9 @@ const SEED = {
     { l: 'CRDB',        a: 0 },
     { l: 'CASH SALARY', a: 0 },
     { l: 'OFFICE',      a: 0 },
+  ],
+  savings: [
+    { l: 'SAVINGS (PAY YOURSELF FIRST)', a: 0 },
   ],
   fixed: [
     { l: 'ADVANCE',           a: 0, paid: false },
@@ -91,14 +99,28 @@ export function setupBudget() {
 
     const left = e.target.closest('[data-bgt-left]');
     if (left) { _setLeftChoice(left.dataset.bgtLeft); return; }
+
+    if (e.target.closest('#goal-add-btn')) { _addGoal(); return; }
+
+    const goalDel = e.target.closest('[data-goal-del]');
+    if (goalDel) { _deleteGoal(goalDel.dataset.goalDel); return; }
+
+    const goalContrib = e.target.closest('[data-goal-contrib]');
+    if (goalContrib) { _addGoalContribution(goalContrib.dataset.goalContrib); return; }
   });
 
   // Auto-save on any edit (debounced)
   let t = null;
   view.addEventListener('input', e => {
-    if (!e.target.matches('[data-bgt-l], [data-bgt-a]')) return;
-    clearTimeout(t);
-    t = setTimeout(() => { _readFormIntoState(); _renderSummaryOnly(); }, 400);
+    if (e.target.matches('[data-bgt-l], [data-bgt-a]')) {
+      clearTimeout(t);
+      t = setTimeout(() => { _readFormIntoState(); _renderSummaryOnly(); }, 400);
+      return;
+    }
+    if (e.target.matches('[data-goal-name], [data-goal-target]')) {
+      clearTimeout(t);
+      t = setTimeout(() => _readGoalFormIntoState(), 400);
+    }
   });
 }
 
@@ -108,6 +130,7 @@ export function renderBudget() {
 
   const state = _getState();
   const cycle = state.cycles[viewKey];
+  if (cycle) cycle.savings = cycle.savings || []; // back-compat for cycles saved before pay-yourself-first
 
   document.getElementById('bgt-month-label').textContent = _keyLabel(viewKey);
 
@@ -127,9 +150,11 @@ export function renderBudget() {
 
   host.innerHTML =
     _sectionCard('receipts', 'RECEIPTS', cycle.receipts, { amountCls: 'green' }) +
+    _sectionCard('savings',  'PAY YOURSELF FIRST — SAVINGS', cycle.savings, { amountCls: 'cyan' }) +
     _sectionCard('fixed',    'FIXED EXPENSES', cycle.fixed, { paidToggle: true }) +
     _sectionCard('float',    'CASH FLOAT ALLOWANCES', cycle.float, {}) +
     _summaryCard(cycle) +
+    _goalsCard() +
     _reviewCard(cycle);
 }
 
@@ -145,10 +170,10 @@ function _startCycle() {
   }));
 
   state.cycles[viewKey] = last
-    ? { receipts: clone(last.receipts), fixed: clone(last.fixed, true),
-        float: clone(last.float), leftChoice: '' }
-    : { receipts: clone(SEED.receipts), fixed: clone(SEED.fixed, true),
-        float: clone(SEED.float), leftChoice: '' };
+    ? { receipts: clone(last.receipts), savings: clone(last.savings || SEED.savings),
+        fixed: clone(last.fixed, true), float: clone(last.float), leftChoice: '' }
+    : { receipts: clone(SEED.receipts), savings: clone(SEED.savings),
+        fixed: clone(SEED.fixed, true), float: clone(SEED.float), leftChoice: '' };
 
   _saveState(state);
   renderBudget();
@@ -182,24 +207,34 @@ function _sectionCard(sec, title, rows, opts) {
 
 function _summaryCard(cycle) {
   const rec   = _sum(cycle.receipts);
+  const sav   = _sum(cycle.savings);
   const fix   = _sum(cycle.fixed);
   const flo   = _sum(cycle.float);
-  const left  = rec - fix - flo;
+  const left  = rec - sav - fix - flo;
   const paid  = _sum(cycle.fixed.filter(r => r.paid));
   const choice = cycle.leftChoice || '';
+
+  const zeroState = Math.abs(left) < 1 ? 'balanced' : left > 0 ? 'under' : 'over';
+  const zeroMsg = {
+    balanced: '✓ ZERO-BASED — EVERY SHILLING IS ASSIGNED',
+    under:    `UNALLOCATED: ${fmtTZS(left)} — ASSIGN IT BELOW`,
+    over:     `OVER-ALLOCATED BY ${fmtTZS(-left)} — CUT SOMETHING`,
+  }[zeroState];
 
   return `
     <div class="card">
       <div class="card-header"><div class="card-title">SUMMARY</div></div>
       <div class="calc-row"><span class="calc-lbl">TOTAL RECEIPTS</span><span class="calc-val cyan"   id="bgt-sum-rec">${fmtTZS(rec)}</span></div>
+      <div class="calc-row"><span class="calc-lbl">PAY YOURSELF FIRST</span><span class="calc-val cyan" id="bgt-sum-sav">${fmtTZS(sav)}</span></div>
       <div class="calc-row"><span class="calc-lbl">FIXED EXPENSES</span><span class="calc-val orange" id="bgt-sum-fix">${fmtTZS(fix)}</span></div>
       <div class="calc-row"><span class="calc-lbl">— OF WHICH PAID</span><span class="calc-val muted" id="bgt-sum-paid">${fmtTZS(paid)}</span></div>
       <div class="calc-row"><span class="calc-lbl">CASH FLOAT</span><span class="calc-val orange"     id="bgt-sum-flo">${fmtTZS(flo)}</span></div>
-      <div class="calc-row total"><span class="calc-lbl">MONEY LEFT</span>
+      <div class="calc-row total"><span class="calc-lbl">UNALLOCATED</span>
         <span class="calc-val ${left >= 0 ? 'cyan' : 'orange'}" id="bgt-sum-left">${fmtTZS(left)}</span>
       </div>
+      <div class="bgt-zero-check ${zeroState}" id="bgt-zero-check">${zeroMsg}</div>
       <div class="bgt-left-row">
-        <span class="bgt-left-lbl">MONEY LEFT GOES TO:</span>
+        <span class="bgt-left-lbl">UNALLOCATED GOES TO:</span>
         <div class="bgt-left-btns">
           ${['savings', 'carry over', 'spend'].map(c => `
             <button class="bgt-left-btn${choice === c ? ' active' : ''}" data-bgt-left="${c}">
@@ -213,11 +248,100 @@ function _summaryCard(cycle) {
 
 function _savingsLine() {
   const state = _getState();
-  const total = Object.values(state.cycles)
-    .filter(c => c.leftChoice === 'savings')
-    .reduce((s, c) => s + (_sum(c.receipts) - _sum(c.fixed) - _sum(c.float)), 0);
+  let total = 0;
+  for (const c of Object.values(state.cycles)) {
+    total += _sum(c.savings || []);              // pay-yourself-first always counts
+    if (c.leftChoice === 'savings') {            // plus any leftovers explicitly sent to savings
+      total += _sum(c.receipts) - _sum(c.savings || []) - _sum(c.fixed) - _sum(c.float);
+    }
+  }
   if (total <= 0) return '';
-  return `<div class="bgt-savings-line">◈ TOTAL MARKED AS SAVINGS ACROSS CYCLES: <b>${fmtTZS(total)}</b></div>`;
+  return `<div class="bgt-savings-line">◈ TOTAL SAVED ACROSS CYCLES: <b>${fmtTZS(total)}</b></div>`;
+}
+
+// ── Goals (cross-cycle wealth layer) ───────────────────────────
+
+function _getGoals()   { return storage.get(GOALS_KEY, []); }
+function _saveGoals(g) { storage.set(GOALS_KEY, g); bus.emit('sync:trigger'); }
+
+function _goalsCard() {
+  const goals = _getGoals();
+  const rows = goals.length ? goals.map(g => {
+    const target  = Math.max(0, +g.target || 0);
+    const current = Math.max(0, +g.current || 0);
+    const pct     = target > 0 ? Math.min(Math.round(current / target * 100), 100) : 0;
+    const done    = target > 0 && current >= target;
+    return `
+      <div class="goal-row${done ? ' done' : ''}">
+        <div class="goal-head">
+          <input class="bgt-label-input" data-goal-name="${esc(g.id)}"   value="${esc(g.name)}"   maxlength="40" />
+          <input class="bgt-amount-input" data-goal-target="${esc(g.id)}" type="number" inputmode="numeric"
+                 value="${target || ''}" placeholder="TARGET" />
+          <span class="bgt-row-del" data-goal-del="${esc(g.id)}">×</span>
+        </div>
+        <div class="goal-progress-wrap">
+          <div class="goal-progress-track">
+            <div class="goal-progress-fill" style="width:${pct}%"></div>
+          </div>
+          <span class="goal-progress-val">${fmtTZS(current)} / ${fmtTZS(target)}${target > 0 ? ` — ${pct}%` : ''}</span>
+        </div>
+        <div class="goal-actions">
+          <button class="bgt-add-btn" data-goal-contrib="${esc(g.id)}">+ CONTRIBUTE</button>
+          ${done ? '<span class="goal-badge">✓ REACHED</span>' : ''}
+        </div>
+      </div>`;
+  }).join('') : '<div class="loading">NO GOALS YET — ADD ONE TO TRACK PROGRESS ACROSS CYCLES</div>';
+
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">SAVINGS & GOALS</div>
+        <button class="bgt-add-btn" id="goal-add-btn">＋ NEW GOAL</button>
+      </div>
+      <div class="goal-list">${rows}</div>
+    </div>`;
+}
+
+function _addGoal() {
+  const goals = _getGoals();
+  goals.push({
+    id: 'g' + Date.now().toString(36),
+    name: '', target: 0, current: 0,
+  });
+  _saveGoals(goals);
+  renderBudget();
+}
+
+function _deleteGoal(id) {
+  const goals = _getGoals().filter(g => g.id !== id);
+  _saveGoals(goals);
+  renderBudget();
+}
+
+function _addGoalContribution(id) {
+  const raw = prompt('Contribution amount (TZS):');
+  if (raw == null) return;
+  const amt = Math.max(0, parseFloat(String(raw).replace(/[,\s]/g, '')) || 0);
+  if (amt <= 0) return;
+  const goals = _getGoals();
+  const g = goals.find(x => x.id === id);
+  if (!g) return;
+  g.current = (+g.current || 0) + amt;
+  _saveGoals(goals);
+  renderBudget();
+}
+
+function _readGoalFormIntoState() {
+  const goals = _getGoals();
+  document.querySelectorAll('#view-budget [data-goal-name]').forEach(inp => {
+    const g = goals.find(x => x.id === inp.dataset.goalName);
+    if (g) g.name = inp.value;
+  });
+  document.querySelectorAll('#view-budget [data-goal-target]').forEach(inp => {
+    const g = goals.find(x => x.id === inp.dataset.goalTarget);
+    if (g) g.target = Math.max(0, parseFloat(inp.value) || 0);
+  });
+  _saveGoals(goals);
 }
 
 // ── EOM review: float targets vs actual logged spend ───────────
@@ -333,16 +457,28 @@ function _readFormIntoState() {
 function _renderSummaryOnly() {
   const cycle = _getState().cycles[viewKey];
   if (!cycle) return;
-  const rec = _sum(cycle.receipts), fix = _sum(cycle.fixed), flo = _sum(cycle.float);
+  const rec = _sum(cycle.receipts), sav = _sum(cycle.savings || []),
+        fix = _sum(cycle.fixed),    flo = _sum(cycle.float);
+  const left = rec - sav - fix - flo;
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = fmtTZS(v); };
   set('bgt-sum-rec',  rec);
+  set('bgt-sum-sav',  sav);
   set('bgt-sum-fix',  fix);
   set('bgt-sum-paid', _sum(cycle.fixed.filter(r => r.paid)));
   set('bgt-sum-flo',  flo);
   const leftEl = document.getElementById('bgt-sum-left');
   if (leftEl) {
-    leftEl.textContent = fmtTZS(rec - fix - flo);
-    leftEl.className   = 'calc-val ' + (rec - fix - flo >= 0 ? 'cyan' : 'orange');
+    leftEl.textContent = fmtTZS(left);
+    leftEl.className   = 'calc-val ' + (left >= 0 ? 'cyan' : 'orange');
+  }
+  const zeroEl = document.getElementById('bgt-zero-check');
+  if (zeroEl) {
+    const st = Math.abs(left) < 1 ? 'balanced' : left > 0 ? 'under' : 'over';
+    zeroEl.className = 'bgt-zero-check ' + st;
+    zeroEl.textContent = st === 'balanced'
+      ? '✓ ZERO-BASED — EVERY SHILLING IS ASSIGNED'
+      : st === 'under' ? `UNALLOCATED: ${fmtTZS(left)} — ASSIGN IT BELOW`
+                       : `OVER-ALLOCATED BY ${fmtTZS(-left)} — CUT SOMETHING`;
   }
   document.querySelectorAll('[data-bgt-total]').forEach(el => {
     el.textContent = fmtTZS(_sum(cycle[el.dataset.bgtTotal] || []));

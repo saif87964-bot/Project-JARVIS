@@ -2773,6 +2773,71 @@ body::after {
   .bgt-rev-val { font-size: 8.5px; }
 }
 
+/* Zero-based allocation check banner */
+.bgt-zero-check {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.12em;
+  padding: 10px 18px;
+  text-align: center;
+  border-top: 1px solid rgba(45,214,255,0.08);
+  transition: color 0.2s, background 0.2s;
+}
+.bgt-zero-check.balanced { color: var(--accent3); background: rgba(46,232,126,0.06); }
+.bgt-zero-check.under    { color: var(--accent);  background: rgba(45,214,255,0.05); }
+.bgt-zero-check.over     { color: var(--accent2); background: rgba(255,120,73,0.06); text-shadow: 0 0 8px rgba(255,120,73,0.4); }
+
+/* Amount-input cyan variant (pay yourself first) */
+.bgt-amount-input.cyan { color: var(--accent); }
+
+/* Savings & Goals card */
+.goal-list { display: flex; flex-direction: column; }
+.goal-row {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(45,214,255,0.06);
+}
+.goal-row:last-child { border-bottom: none; }
+.goal-row.done { background: rgba(46,232,126,0.04); }
+
+.goal-head { display: flex; align-items: center; gap: 8px; }
+
+.goal-progress-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.goal-progress-track {
+  flex: 1; height: 8px;
+  background: rgba(45,214,255,0.07);
+  border-radius: 99px; overflow: hidden;
+  border: 1px solid rgba(45,214,255,0.08);
+}
+.goal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  border-radius: 99px;
+  box-shadow: 0 0 10px rgba(45,214,255,0.5);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.goal-row.done .goal-progress-fill {
+  background: linear-gradient(90deg, var(--accent3), var(--accent3));
+  box-shadow: 0 0 12px rgba(46,232,126,0.6);
+}
+.goal-progress-val {
+  font-family: var(--font-mono); font-size: 9.5px;
+  color: var(--muted); letter-spacing: 0.04em;
+  white-space: nowrap; flex-shrink: 0;
+}
+.goal-actions {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.goal-badge {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em;
+  color: var(--accent3);
+  padding: 3px 10px; border-radius: 999px;
+  background: rgba(46,232,126,0.1);
+  border: 1px solid rgba(46,232,126,0.4);
+  text-shadow: 0 0 6px rgba(46,232,126,0.4);
+}
+
 /* ── Boot animation ──────────────────────────────────────────── */
 .boot-overlay {
   display: none; position: fixed; inset: 0;
