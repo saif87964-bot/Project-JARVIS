@@ -1355,6 +1355,7 @@ body::after {
   .center {
     overflow-y: visible;
     padding: 12px;
+    padding-bottom: 140px;   /* clear command bar (~50px) + bottom nav (72px) + gap */
     gap: 12px;
   }
 
@@ -3152,7 +3153,18 @@ select:focus {
 .cash-envs {
   display: flex; flex-wrap: wrap; gap: 6px;
   padding: 10px 18px 4px;
+  align-items: center;
 }
+/* Category row is collapsed by default when envelopes are present.
+   Toggle via the "＋ TAGS" pill at the end of the envelopes row. */
+.cash-cats.collapsed { display: none; }
+.cash-more-tags-toggle {
+  border-style: dashed !important;
+  opacity: 0.75;
+  margin-left: auto;
+}
+.cash-more-tags-toggle:hover { opacity: 1; }
+.cash-more-tags-toggle.open { opacity: 1; border-style: solid !important; }
 .cash-envs-hint {
   font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em;
   color: var(--muted); opacity: 0.7; padding: 6px 0;
@@ -3245,6 +3257,31 @@ select:focus {
 .wealth-inv-growth { color: var(--accent3) !important; }
 
 [data-skin="money"] .wealth-acct-ic { background: rgba(224,184,96,0.08); color: var(--accent); }
+
+/* Money skin — brand + primary button tweaks */
+[data-skin="money"] .logo {
+  font-family: var(--font-ui);
+  font-weight: 700; letter-spacing: -0.01em;
+  text-shadow: none; color: var(--text);
+}
+[data-skin="money"] .logo-dot {
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(224,184,96,0.6);
+}
+[data-skin="money"] .task-add-btn {
+  background: linear-gradient(180deg, var(--accent), #c79a3e);
+  color: #0b1424;
+  box-shadow: 0 8px 20px -6px rgba(224,184,96,0.5);
+}
+[data-skin="money"] .task-add-btn:hover { filter: brightness(1.06); }
+[data-skin="money"] .cash-type-btn.active {
+  background: rgba(224,184,96,0.12);
+  border-color: rgba(224,184,96,0.55);
+  color: var(--accent);
+  box-shadow: 0 0 12px -4px rgba(224,184,96,0.5);
+}
+/* Money skin — soften topbar sweep + status pills */
+[data-skin="money"] .topbar-center { font-family: var(--font-mono); color: var(--muted); letter-spacing: 0.14em; }
 
 /* ═══════════════════════════════════════════════════════════════
    SKIN: MONEY  —  deep navy + gold, wealth-app vibe

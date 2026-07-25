@@ -16,7 +16,7 @@
      Safe — runs only once per version key, never loops. -->
 <script>
 (function(){
-  var K='jv_bust_v34';
+  var K='jv_bust_v35';
   if(localStorage.getItem(K))return;
   localStorage.setItem(K,'1');
   if(!('serviceWorker' in navigator))return;
@@ -27,7 +27,7 @@
   });
 })();
 </script>
-<link rel="stylesheet" href="style.css?v=27">
+<link rel="stylesheet" href="style.css?v=28">
 <style>
 /* Inline critical mobile overrides — always fresh because index.html is network-first */
 @media (max-width: 768px) {

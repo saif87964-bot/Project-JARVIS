@@ -80,17 +80,24 @@ function renderEnvelopeChips() {
   if (envs.length === 0) {
     container.innerHTML = '<div class="cash-envs-hint">START THIS MONTH’S BUDGET TO SEE ENVELOPES</div>';
     cashTxEnv = null;
+    // No envelopes → show categories as the fallback tag row
+    document.getElementById('cash-cats')?.classList.remove('collapsed');
     return;
   }
   if (cashTxEnv && !envs.find(e => e.id === cashTxEnv)) cashTxEnv = null;
   const spent = _envSpentThisMonth();
+  const displayLbl = l => l.replace(/\s*ALLOWANCE\s*$/i, '').trim() || l;
+  const catsCollapsed = storage.get('jv_cash_cats_collapsed') !== false;   // default collapsed
   container.innerHTML = envs.map(e => {
     const left = Math.max(0, (e.target || 0) - (spent[e.id] || 0));
     const over = (spent[e.id] || 0) > (e.target || 0) && e.target > 0;
     return `<button class="cash-env-chip${cashTxEnv === e.id ? ' active' : ''}${over ? ' over' : ''}" data-env="${esc(e.id)}">
-      ${esc(e.label)}<span class="cash-env-left">${e.target ? fmtTZS(left).replace('TZS ', '') : '—'}</span>
+      ${esc(displayLbl(e.label))}<span class="cash-env-left">${e.target ? fmtTZS(left).replace('TZS ', '') : '—'}</span>
     </button>`;
-  }).join('');
+  }).join('') + `<button class="cash-env-chip cash-more-tags-toggle${catsCollapsed ? '' : ' open'}" id="cash-more-tags">${catsCollapsed ? '＋ TAGS' : '− TAGS'}</button>`;
+  // Sync category-row visibility with the toggle state
+  const cats = document.getElementById('cash-cats');
+  if (cats) cats.classList.toggle('collapsed', catsCollapsed);
 }
 
 function renderCategoryChips() {
@@ -449,8 +456,15 @@ export function setupCash() {
   // Envelope chips — rendered dynamically; use delegation
   renderEnvelopeChips();
   document.addEventListener('click', e => {
+    // "＋ TAGS" toggle → expand/collapse categories row
+    if (e.target.closest('#cash-more-tags')) {
+      const cur = storage.get('jv_cash_cats_collapsed') !== false;
+      storage.set('jv_cash_cats_collapsed', !cur);
+      renderEnvelopeChips();
+      return;
+    }
     const chip = e.target.closest('.cash-env-chip');
-    if (chip && chip.closest('#cash-envs')) {
+    if (chip && chip.closest('#cash-envs') && chip.dataset.env) {
       const id = chip.dataset.env;
       cashTxEnv = cashTxEnv === id ? null : id;  // tap-again to clear
       document.querySelectorAll('#cash-envs .cash-env-chip').forEach(c => c.classList.remove('active'));
