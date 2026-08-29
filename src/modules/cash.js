@@ -12,7 +12,7 @@ import { getCurrentEnvelopes }      from './budget.js';
 
 let cashTxType = 'debit';
 let cashTxCat  = 'misc';
-let cashTxEnv  = null;    // envelope id (from budget FLOAT rows) or null
+let cashTxEnv  = null;    // envelope id (from the budget's weekly budget) or null
 let activeAcc  = 'all';   // 'all' or an account id
 
 // ── Storage ────────────────────────────────────────────────────
@@ -59,16 +59,19 @@ function removeCategory(id) {
   renderCategoryChips();
 }
 
-// ── Envelope chips (from budget FLOAT rows this month) ─────────
+// ── Envelope chips (from the budget's weekly-budget pot) ───────
+// The weekly budget is the sole catch-all envelope, so any untagged debit
+// counts against it too — "everything else comes from it".
 function _envSpentThisMonth() {
   const now = new Date();
   const y = now.getFullYear(), m = now.getMonth();
   const spent = {};
   getCashData().transactions.forEach(tx => {
-    if (tx.type !== 'debit' || !tx.envelope) return;
+    if (tx.type !== 'debit') return;
     const d = new Date(tx.date);
     if (d.getFullYear() !== y || d.getMonth() !== m) return;
-    spent[tx.envelope] = (spent[tx.envelope] || 0) + tx.amount;
+    const env = tx.envelope || 'weekly';
+    spent[env] = (spent[env] || 0) + tx.amount;
   });
   return spent;
 }
