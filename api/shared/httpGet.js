@@ -1,6 +1,6 @@
 'use strict';
 
-// ── JARVIS — netlify/functions/shared/httpGet.js ───────────────
+// ── JARVIS — api/shared/httpGet.js ──────────────────────────────
 // Shared HTTP GET helper with redirect following (up to 5 hops).
 // Used by news.js and summarize.js to eliminate duplication.
 //

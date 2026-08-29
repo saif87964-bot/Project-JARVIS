@@ -1,6 +1,6 @@
 // ── JARVIS — src/modules/news.js ─────────────────────────────
-// News: Netlify proxy fetch → rss2json fallback, tab filtering,
-// dashboard preview, article summary modal.
+// News: Vercel serverless proxy fetch → rss2json fallback, tab
+// filtering, dashboard preview, article summary modal.
 //
 // Exports:
 //   initNews()          — one-time setup (tabs, modal, delegation)
@@ -42,7 +42,7 @@ export async function loadDashboardNews() {
   for (const [key, src] of Object.entries(RSS_SOURCES)) {
     let fetched = false;
 
-    // 1. Netlify Function (server-side — no CORS, no rate-limit)
+    // 1. Vercel Function (server-side — no CORS, no rate-limit)
     try {
       const r = await fetchWithTimeout(`/api/news?feed=${key}`, 7000);
       if (r.ok) {
@@ -89,7 +89,7 @@ export async function loadFullNews() {
   const fetches = Object.entries(RSS_SOURCES).map(async ([key, src]) => {
     if (newsCache[key] !== undefined) return; // cached or previously failed
 
-    // 1. Netlify Function
+    // 1. Vercel Function
     try {
       const r = await fetchWithTimeout(`/api/news?feed=${key}`, 8000);
       if (r.ok) {
@@ -186,7 +186,7 @@ function openArticleModal(url, headline, meta, rssDesc) {
           `<div class="modal-setup-note">
             ⚙ <strong>AI summaries</strong> require an Anthropic API key.<br>
             Add <code>ANTHROPIC_API_KEY</code> to your
-            <a href="https://app.netlify.com" target="_blank" rel="noopener">Netlify environment variables</a>
+            <a href="https://vercel.com/dashboard" target="_blank" rel="noopener">Vercel environment variables</a>
             to enable this feature.
           </div>`;
 
